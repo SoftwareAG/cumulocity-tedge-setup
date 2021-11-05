@@ -1,1 +1,20 @@
 <img src="../assets/Analysis.png"/>
+
+<div class="form-group">
+    <span>app is running! (server status {{status}})
+    </span>
+</div>
+<div class="form-group">
+    <span>app calculated! (result {{result}})
+    </span>
+</div>
+<div class="form-group">
+    <span>app failed with cmd! (result {{cmdError}})
+    </span>
+</div>
+<div class="form-group">
+    <c8y-form-group>
+        <label translate>app running cmd!</label>
+        <textarea style="width:100%" [(ngModel)]="cmd" rows="20"></textarea>
+    </c8y-form-group>
+</div>

@@ -21,7 +21,7 @@ var distDir = __dirname + "/dist/cumulocity-tedge-setup";
 app.use(express.static(distDir));
 
 // Init the server
-var server = app.listen(process.env.PORT || 8080, function () {
+var server = app.listen(process.env.PORT || 9080, function () {
     var port = server.address().port;
     console.log("App now running on port", port);
 });
@@ -32,6 +32,18 @@ var server = app.listen(process.env.PORT || 8080, function () {
 app.get("/api/status", function (req, res) {
     res.status(200).json({ status: "UP" });
 });
+
+/*  "/api/update"
+ *   GET: Update 
+ */
+app.get("/api/update", function (req, res) {
+    let name = req.query.name
+    let description = req.query.description
+    let isComplex = (req.query.isComplex === 'true');
+    console.log("Certificate update", name, description, isComplex);
+    res.status(200).json({ result: "ok" });
+});
+
 
 
 /*  "/api/calc"

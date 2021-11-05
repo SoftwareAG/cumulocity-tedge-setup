@@ -1,19 +1,25 @@
-<h1>certificate works!</h1>
-<div class="form-group">
-    <span>app is running! (server status {{status}})
-    </span>
-</div>
-<div class="form-group">
-    <span>app calculated! (result {{result}})
-    </span>
-</div>
-<div class="form-group">
-    <span>app failed with cmd! (result {{cmdError}})
-    </span>
-</div>
-<div class="form-group">
-    <c8y-form-group>
-        <label translate>app running cmd!</label>
-        <textarea style="width:100%" [(ngModel)]="cmd" rows="20"></textarea>
-    </c8y-form-group>
+<c8y-title>
+  {{ 'Certificate setup' | translate }}
+</c8y-title>
+
+<c8y-action-bar-item [placement]="'right'">
+  <button
+    class="btn btn-link"
+    title="{{ 'Create certificate' | translate }}"
+    (click)="showACreateCertificate = !showACreateCertificate"
+  >
+    <i class="fa fa-plus-circle"></i>&nbsp;<span translate>Create certificate</span>
+  </button>
+</c8y-action-bar-item>
+
+<div [ngClass]="{ drawerOpen: showACreateCertificate }">
+  <div class="bottom-drawer">
+    <c8y-manage-certificate
+      *ngIf="showACreateCertificate"
+      (onClose)="onCloseCertificateDialog()"
+      [refresh]="refresh"
+      class="d-contents"
+    >
+    </c8y-manage-certificate>
+  </div>
 </div>

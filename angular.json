@@ -24,7 +24,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles/index.less"
             ],
             "scripts": []
           },
@@ -122,5 +122,10 @@
       }
     }
   },
-  "defaultProject": "cumulocity-tedge-setup"
+  "defaultProject": "cumulocity-tedge-setup",
+  "schematics": {
+    "@schematics/angular:component": {
+      "style": "less"
+    }
+  }
 }

@@ -1,14 +1,16 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 
 //import { AppRoutingModule } from './app-routing.module';
 import { RouterModule as ngRouterModule } from '@angular/router';
-import { CoreModule, BootstrapComponent, RouterModule, HOOK_NAVIGATOR_NODES, NavigatorNode, CommonModule, AppStateService, LoginService, OptionsService, ApplicationOptions } from '@c8y/ngx-components';
+import { CoreModule, BootstrapComponent, RouterModule, HOOK_NAVIGATOR_NODES, NavigatorNode, CommonModule, AppStateService, FormsModule, DynamicFormsModule } from '@c8y/ngx-components';
 import { ICurrentTenant, IUser } from '@c8y/client';
 import { CertificateComponent } from './certificate/certificate.component';
 import { BehaviorSubject } from 'rxjs';
 import { AnalysisComponent } from './analysis/analysis.component';
+import { ManageCertificateComponent } from './manage-certificate/manage-certificate.component';
 
 @NgModule({
   imports: [
@@ -20,6 +22,9 @@ import { AnalysisComponent } from './analysis/analysis.component';
       { enableTracing: false, useHash: true }
     ),
     CoreModule.forRoot(),
+    FormsModule,
+    ReactiveFormsModule,
+    DynamicFormsModule,
     CommonModule
   ],
   providers: [
@@ -40,7 +45,7 @@ import { AnalysisComponent } from './analysis/analysis.component';
         path: 'Analysis',
         label: 'Analysis',
         priority: 100,
-        icon: 'cog',
+        icon: 'area-chart',
 
       }] as NavigatorNode[],
       multi: true
@@ -53,7 +58,7 @@ import { AnalysisComponent } from './analysis/analysis.component';
     },
   ],
   bootstrap: [BootstrapComponent],
-  declarations: [CertificateComponent, AnalysisComponent]
+  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent]
 })
 export class AppModule { }
 
