@@ -12,3 +12,9 @@ export class TenantInfo {
   tenantId:string
   tenantUrl: string
 }
+
+export class StatusEdgeStart {
+  status: string
+  progress: number
+  total: number
+}

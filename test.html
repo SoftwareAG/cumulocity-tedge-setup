@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+            var socket = io('http://localhost:9080');
+            socket.on('start-edge', function (message) {
+                  // create a new div element
+                    const newDiv = document.createElement("div");
+                    // and give it some content
+                    const newContent = document.createTextNode(JSON.stringify(message));
+                    // add the text node to the newly created div
+                    newDiv.appendChild(newContent);
+                document.body.appendChild(
+                    newDiv
+                );
+            });
+            socket.emit('start', {
+                    greeting: 'Hello Server'
+            });
+</script>
+</body>
+</html>

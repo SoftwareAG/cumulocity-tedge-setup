@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Client, BasicAuth, FetchClient, MeasurementService, IMeasurementCreate, IResult, IMeasurement, IFetchOptions, IFetchResponse } from '@c8y/client';
-import { TenantInfo } from './property.model';
+import { StatusEdgeStart, TenantInfo } from './property.model';
+import { Socket } from 'ngx-socket-io';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 const STATUS_URL = '/api/status';
 const CALC_URL = '/api/calc';
@@ -18,15 +21,25 @@ export class EdgeService {
 
   private fetchClient: FetchClient;
   private measurementService: MeasurementService;
-  private tenantInfo: TenantInfo  = {
+  private tenantInfo: TenantInfo = {
     username: 'christof.strack@softwareag.com',
     password: 'Manage250!',
     tenantId: 't306817378',
     tenantUrl: 'https://ck2.eu-latest.cumulocity.com'
   };
-  
-  constructor(private http: HttpClient) { }
-  
+
+  constructor(private http: HttpClient,
+    private socket: Socket) { }
+
+  startEdge(msg: string) {
+    this.socket.emit('start', msg);
+  }
+
+  getStatusEdgeStart() :Observable <StatusEdgeStart>{
+   // return this.socket.fromEvent('start-edge').pipe(map((data) => JSON.stringify(data)));
+    return this.socket.fromEvent('start-edge');
+  }
+
   getTenantInfo(): TenantInfo {
     return this.tenantInfo;
   }
@@ -46,22 +59,12 @@ export class EdgeService {
       proxy: this.tenantInfo.tenantUrl
     }
 
-/*     let loginPromise: Promise<void | any> = this.http.get(LOGIN_URL)
-      .toPromise()
-      .then(response => {
-        //console.log ("Resulting cmd:", response);
-        return response;
-      })
-      .catch(err => {
-        console.log("could not login:" + err.message)
-        return err;
-      }) */
-      const options: IFetchOptions = {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      };
+    const options: IFetchOptions = {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    };
 
-      let loginPromise: Promise<IFetchResponse> = this.fetchClient.fetch(LOGIN_URL, options)
+    let loginPromise: Promise<IFetchResponse> = this.fetchClient.fetch(LOGIN_URL, options)
       .then(response => {
         //console.log ("Resulting cmd:", response);
         return response;
@@ -84,17 +87,6 @@ export class EdgeService {
       )
   }
 
-  /*
-  *  const mandantoryObject: Partial<IMeasurementCreate> = {
-  *    sourceId: device.id,
-  *    fragment: { series: { unit: '%', value: 51 } },
-  *  };
-  *
-  *  (async () => {
-  *    const {data, res} = await measurementService.create(mandantoryObject);
-  *  })();
-  * ```
-  */
   createMeasurement(mandantoryObject: Partial<IMeasurementCreate>): Promise<IResult<IMeasurement>> {
     return this.measurementService.create(mandantoryObject);
   }

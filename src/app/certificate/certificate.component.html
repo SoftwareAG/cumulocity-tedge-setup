@@ -23,3 +23,14 @@
     </c8y-manage-certificate>
   </div>
 </div>
+
+<div class="card">
+  <div class="card-block">
+    <div class="form-group">
+      <button type="button" (click)="startEdge()">Start Edge</button>
+    </div>
+  </div>
+<!--   <div *ngIf= "(statusEdgeStart$|async)" >{{statusEdgeStart$|async|json}}</div> -->
+  <c8y-progress-bar *ngIf= "(statusEdgeStart$|async)" [progress]="100 * ((statusEdgeStart$|async).progress)/((statusEdgeStart$|async).total)" [message]="statusEdgeStart$|async| json"></c8y-progress-bar>
+
+</div>

@@ -1,5 +1,7 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { EdgeService } from '../edge.service';
+import { StatusEdgeStart } from '../property.model';
 
 @Component({
   selector: 'app-certificate',
@@ -9,12 +11,16 @@ import { EdgeService } from '../edge.service';
 export class CertificateComponent implements OnInit {
   refresh: EventEmitter<any> = new EventEmitter();
   public showACreateCertificate: boolean = false;
+  statusEdgeStart$: Observable<StatusEdgeStart>;
 
-  constructor() {}
+  constructor(private edgeService: EdgeService) { }
 
   ngOnInit() {}
 
-
+  startEdge()  {
+    this.edgeService.startEdge("Start Thin Edge");
+    this.statusEdgeStart$ = this.edgeService.getStatusEdgeStart()
+  }
   private showManageCertificateDialog(): void {
     this.showACreateCertificate = true;
   }

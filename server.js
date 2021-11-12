@@ -8,12 +8,12 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 // spawn
 const { spawn } = require("child_process");
 const events = require('events');
-const { Server }  = require('socket.io')
+const socketIO  = require('socket.io')
 const ConfigParser = require('configparser');
 const fs = require('fs')
 const CONFIG_FILE = '/etc/tedge/edge.toml';
 // Create new instance of the express server
-var app = express();
+const app = express();
 
 const options = createProxyMiddleware(
     {
@@ -25,6 +25,9 @@ const options = createProxyMiddleware(
 );
 // send 
 const taskReady = new events.EventEmitter();
+
+// avoid starting the edge twice
+var inStartMode = false
 
 // set up proxy 
 app.use('/c8y', options);
@@ -49,8 +52,8 @@ app.use(express.static(distDir));
 
 const server = http.createServer(app);
 // Pass a http.Server instance to the listen method
-const io = new Server(server);
-
+// const io = new Server(server);
+const io = socketIO(server);
 // The server should start listening
 server.listen(process.env.PORT || 9080, function () {
     var port = server.address().port;
@@ -122,7 +125,7 @@ app.post("/api/cmd", function (req, res) {
         });
 
         child.stdout.on('end', (data) => {
-            console.log('stdout:', s);
+            console.log('stdout:', data);
             if (!sent) {
                 var stdoutContent = Buffer.concat(stdoutChunks).toString();
                 console.log(`stdout: ${stdoutContent}`);
@@ -246,29 +249,44 @@ function start(socket) {
             }
         ] */
 
-        tasks = [
+        const tasks = [
             {
                 task: 'ls',
                 args: ['-la']
             },
             {
-                task: 'echo',
-                args: ['"Task 2"']
+                task: 'ls',
+                args: ['-la']
+            },
+            {
+                task: 'ls',
+                args: ['-ltr']
+            },
+            {
+                task: 'sleep',
+                args: ['5s']
+            },
+            {
+                task: 'sleep',
+                args: ['10s']
             },
             {
                 task: 'echo',
                 args: ['"Task 3"']
             },
-        ]
+        ];
 
-
-
-
+        socket.emit('start-edge', {
+            status: 'starting',
+            progress: 0,
+            total: tasks.length
+        });
         let id = 0;
         queueTask(tasks, id, socket);
         taskReady.on(`finished-task-final`, (exitCode) => {
-            id++
-            taskReady.removeAllListeners();
+               console.log(`Received event finished-task-final: ${exitCode}`);
+               taskReady.removeAllListeners();
+               inStartMode = false;
         })
 
     } catch (err) {
@@ -281,31 +299,48 @@ function queueTask(tasks, id, socket) {
     taskSpawn.on('exit', (exitCode) => {
         if (parseInt(exitCode) !== 0) {
             //Handle non-zero exit
+            console.error(`Error (event exit): ${exitCode} on task ${id}`)
+        }
+        taskReady.emit(`finished-task-${id}`, exitCode);
+    });
+
+    taskSpawn.on('error', (exitCode) => {
+        if (parseInt(exitCode) !== 0) {
+            //Handle non-zero exit
+            console.error(`Error (event error): ${exitCode} on task ${id}`)
         }
         taskReady.emit(`finished-task-${id}`, exitCode);
     });
 
     taskReady.on(`finished-task-${id}`, (exitCode) => {
-        id++
-        if (id >= tasks.length) {
-            taskReady.emit(`finished-task-final`); 
+        // check error
+        if (parseInt(exitCode) !== 0) {
+            taskReady.emit(`finished-task-final`, exitCode); 
             socket.emit('start-edge', {
-                status: 'end',
-                progress: id
+                status: 'error',
+                progress: id,
+                total: tasks.length
             });
-        } else {
-            if (parseInt(exitCode) !== 0) {
-                socket.emit('start-edge', {
-                    status: 'error',
-                    progress: id
-                });
+        } else  {
+            console.log(`Bevor processing task: ${JSON.stringify(tasks[id])}, ${id}`);
+            socket.emit('start-edge', {
+                status: 'processed',
+                progress: id + 1 ,
+                total: tasks.length
+            });
+
+            // prepare next task
+            id++
+            if (id >= tasks.length) {
                 taskReady.emit(`finished-task-final`, exitCode); 
-            } else {
                 socket.emit('start-edge', {
                     status: 'end',
-                    progress: id
+                    progress: id,
+                    total: tasks.length
                 });
-                queueTask(tasks, id);
+            } else {
+                //console.log(`Nach processing task: ${JSON.stringify(tasks[id])}, ${id}`);
+                queueTask(tasks, id, socket );
             }
         }
     }
@@ -313,12 +348,17 @@ function queueTask(tasks, id, socket) {
 }
 
 io.on('connection', function (socket) {
-    socket.emit('start-edge', {
-        status: 'starting',
-        status: 0
-    });
     socket.on('start', function (message) {
-      start(socket);
-      console.log(message);
+        if (!inStartMode)  {
+            inStartMode = true;
+            start(socket);
+            console.log(message);
+        } else {
+            socket.emit('start-edge', {
+                status: 'ignore',
+                progress: 0,
+                total: 0
+            });
+        }
     });
 });
