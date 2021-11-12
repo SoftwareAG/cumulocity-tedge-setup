@@ -11,6 +11,7 @@ import { CertificateComponent } from './certificate/certificate.component';
 import { BehaviorSubject } from 'rxjs';
 import { AnalysisComponent } from './analysis/analysis.component';
 import { ManageCertificateComponent } from './manage-certificate/manage-certificate.component';
+import { CloudComponent } from './cloud/cloud.component';
 
 @NgModule({
   imports: [
@@ -18,7 +19,7 @@ import { ManageCertificateComponent } from './manage-certificate/manage-certific
     BrowserModule,
     RouterModule.forRoot(),
     ngRouterModule.forRoot(
-      [{ path: 'Certificate', component: CertificateComponent }, { path: 'Analysis', component: AnalysisComponent }], // hook the route here
+      [{ path: 'Certificate', component: CertificateComponent }, { path: 'Analysis', component: AnalysisComponent }, { path: 'Cloud', component: CloudComponent }], // hook the route here
       { enableTracing: false, useHash: true }
     ),
     CoreModule.forRoot(),
@@ -51,6 +52,17 @@ import { ManageCertificateComponent } from './manage-certificate/manage-certific
       multi: true
     },
     {
+      provide: HOOK_NAVIGATOR_NODES,
+      useValue: [{
+        path: 'Cloud',
+        label: 'Cloud',
+        priority: 100,
+        icon: 'cloud',
+
+      }] as NavigatorNode[],
+      multi: true
+    },
+    {
       provide: APP_INITIALIZER,
       useFactory: initAppState,
       multi: true,
@@ -58,7 +70,7 @@ import { ManageCertificateComponent } from './manage-certificate/manage-certific
     },
   ],
   bootstrap: [BootstrapComponent],
-  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent]
+  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent]
 })
 export class AppModule { }
 

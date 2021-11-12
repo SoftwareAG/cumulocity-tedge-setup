@@ -22,8 +22,10 @@
     "@angular/router": "~8.2.14",
     "@c8y/ngx-components": "1010.0.17",
     "@c8y/style": "1010.0.17",
+    "configparser": "^0.3.9",
     "font-awesome": "^4.7.0",
     "rxjs": "~6.4.0",
+    "socket.io": "^4.3.2",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
   },
@@ -38,6 +40,7 @@
     "@types/node": "~8.9.4",
     "autoprefixer": "^7.1.1",
     "codelyzer": "^5.0.0",
+    "http-proxy-middleware": "^2.0.1",
     "protractor": "~7.0.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",

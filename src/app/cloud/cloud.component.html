@@ -1,0 +1,37 @@
+<div class="card">
+  <div class="card-block">
+    <div class="form-group" [formGroup]="loginForm">
+      <div class="row">
+        <c8y-form-group class="col-lg-4">
+          <label translate>Tenant URL</label>
+          <input class="form-control" type="text" formControlName="tenantUrl"
+            placeholder="https://your-tenant.cumulocity.com" #tenantUrlRef required />
+          <c8y-messages>
+            <c8y-message *ngIf="!loginForm.untouched && !tenantUrlRef.value" translate>This field is required.
+            </c8y-message>
+          </c8y-messages>
+          <label title="Tenant ID">Tenant ID</label>
+          <input class="form-control" type="text" formControlName="tenantId" placeholder="your tenantId, e.g. t30000000"
+            #tenantIdlRef required />
+        </c8y-form-group>
+      </div>
+      <div class="row">
+        <c8y-form-group class="col-lg-4">
+          <label translate>Username</label>
+          <input class="form-control" formControlName="username" placeholder="your username" #tusernameRef required />
+          <label translate>Password</label>
+          <input class="form-control" formControlName="password" placeholder="your password" type="password"
+            #passwordlRef required />
+        </c8y-form-group>
+      </div>
+      <button (click)="login()">Login to Tenant</button>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-block">
+    <div class="form-group">
+      <button type="button" (click)="createMeasurement()">Create Test Measurement</button>
+    </div>
+  </div>
+</div>

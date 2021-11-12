@@ -1,19 +1,105 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { Client, BasicAuth, FetchClient, MeasurementService, IMeasurementCreate, IResult, IMeasurement, IFetchOptions, IFetchResponse } from '@c8y/client';
+import { TenantInfo } from './property.model';
+
+const STATUS_URL = '/api/status';
+const CALC_URL = '/api/calc';
+const CMD_URL = '/api/cmd';
+const UPDATE_URL = '/api/update';
+const C8Y_URL = 'c8y';
+const LOGIN_URL = `/tenant/currentTenant`
+const CONFIG_URL = '/config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EdgeService {
-  private statusUrl = '/api/status';
-  private calcsUrl = '/api/calc';
-  private cmdUrl = '/api/cmd';
-  private updateUrl = '/api/update';
 
+  private fetchClient: FetchClient;
+  private measurementService: MeasurementService;
+  private tenantInfo: TenantInfo  = {
+    username: 'christof.strack@softwareag.com',
+    password: 'Manage250!',
+    tenantId: 't306817378',
+    tenantUrl: 'https://ck2.eu-latest.cumulocity.com'
+  };
+  
   constructor(private http: HttpClient) { }
+  
+  getTenantInfo(): TenantInfo {
+    return this.tenantInfo;
+  }
 
+  initializeFetchClient(tenantInfo: TenantInfo): Promise<void | any> {
+    this.tenantInfo = tenantInfo;
+    const auth = new BasicAuth({
+      user: this.tenantInfo.username,
+      password: this.tenantInfo.password,
+      tenant: this.tenantInfo.tenantId
+    });
+    const client = new Client(auth, C8Y_URL);
+    client.setAuth(auth);
+    this.fetchClient = client.core;
+    this.measurementService = new MeasurementService(this.fetchClient);
+    const params = {
+      proxy: this.tenantInfo.tenantUrl
+    }
 
-  updateCertificate( name:string, description:string ,isComplex:boolean) {
+/*     let loginPromise: Promise<void | any> = this.http.get(LOGIN_URL)
+      .toPromise()
+      .then(response => {
+        //console.log ("Resulting cmd:", response);
+        return response;
+      })
+      .catch(err => {
+        console.log("could not login:" + err.message)
+        return err;
+      }) */
+      const options: IFetchOptions = {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      };
+
+      let loginPromise: Promise<IFetchResponse> = this.fetchClient.fetch(LOGIN_URL, options)
+      .then(response => {
+        //console.log ("Resulting cmd:", response);
+        return response;
+      })
+      .catch(err => {
+        console.log("could not login:" + err.message)
+        return err;
+      })
+
+    return this.http.post(CONFIG_URL, params)
+      .toPromise()
+      .then(response => {
+        //console.log ("Resulting cmd:", response);
+        return response;
+      })
+      .catch(err => console.log("could not set backend proxy"))
+      .then((success) => {
+        return loginPromise;
+      }
+      )
+  }
+
+  /*
+  *  const mandantoryObject: Partial<IMeasurementCreate> = {
+  *    sourceId: device.id,
+  *    fragment: { series: { unit: '%', value: 51 } },
+  *  };
+  *
+  *  (async () => {
+  *    const {data, res} = await measurementService.create(mandantoryObject);
+  *  })();
+  * ```
+  */
+  createMeasurement(mandantoryObject: Partial<IMeasurementCreate>): Promise<IResult<IMeasurement>> {
+    return this.measurementService.create(mandantoryObject);
+  }
+
+  updateCertificate(name: string, description: string, isComplex: boolean): Promise<any> {
     const params = new HttpParams({
       fromObject: {
         name: name,
@@ -22,7 +108,7 @@ export class EdgeService {
       }
     });
     const promise = new Promise((resolve, reject) => {
-      const apiURL = this.updateUrl;
+      const apiURL = UPDATE_URL;
       this.http
         .get(apiURL, { params: params })
         .toPromise()
@@ -39,29 +125,9 @@ export class EdgeService {
     return promise;
   }
 
-/*    
- const params = new HttpParams({
-      fromObject: {
-        name: name,
-        description: description,
-        isComplex: isComplex.toString()
-      }
-    });
-    return this.http.get(this.updateUrl, { params: params })
-      .toPromise()
-      .then(response => {
-        return response;
-      })
-      .catch( reason => {
-        return reason;
-      }) 
-      ;
-  } */
-  
-
   // Get the status
   getStatus(): Promise<void | any> {
-    return this.http.get(this.statusUrl)
+    return this.http.get(STATUS_URL)
       .toPromise()
       .then(response => {
         return response;
@@ -77,7 +143,7 @@ export class EdgeService {
         b: b.toString(),
       }
     });
-    return this.http.get(this.calcsUrl, { params: params })
+    return this.http.get(CALC_URL, { params: params })
       .toPromise()
       .then(response => {
         return response;
@@ -88,10 +154,10 @@ export class EdgeService {
   // run cmd
   runCmd(cmd: string, args: string[]): Promise<void | any> {
     const params = {
-        cmd: cmd,
-        args: args
-      }
-    return this.http.post(this.cmdUrl, params)
+      cmd: cmd,
+      args: args
+    }
+    return this.http.post(CMD_URL, params)
       .toPromise()
       .then(response => {
         //console.log ("Resulting cmd:", response);

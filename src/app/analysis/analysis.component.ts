@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { EdgeService } from '../edge.service';
+import { IMeasurementCreate } from '@c8y/client';
 
 @Component({
   selector: 'app-analysis',
@@ -16,6 +17,8 @@ export class AnalysisComponent implements OnInit {
   constructor(private edgeService: EdgeService) { }
 
   ngOnInit() {
+ 
+    
     this.edgeService
       .getStatus()
       .then((result: any) => {
