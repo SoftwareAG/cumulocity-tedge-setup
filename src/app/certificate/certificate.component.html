@@ -30,7 +30,8 @@
       <button type="button" (click)="startEdge()">Start Edge</button>
     </div>
   </div>
-<!--   <div *ngIf= "(statusEdgeStart$|async)" >{{statusEdgeStart$|async|json}}</div> -->
-  <c8y-progress-bar *ngIf= "(statusEdgeStart$|async)" [progress]="100 * ((statusEdgeStart$|async).progress)/((statusEdgeStart$|async).total)" [message]="statusEdgeStart$|async| json"></c8y-progress-bar>
-
+  <c8y-progress-bar *ngIf= "showStatusBar" [progress]="progress"></c8y-progress-bar>
+  <div>
+    <textarea class="commandTerminal" cols="80" rows="12">{{commandTerminal}}</textarea>
+  </div>
 </div>

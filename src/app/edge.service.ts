@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Client, BasicAuth, FetchClient, MeasurementService, IMeasurementCreate, IResult, IMeasurement, IFetchOptions, IFetchResponse } from '@c8y/client';
-import { StatusEdgeStart, TenantInfo } from './property.model';
+import { EdgeCMDProgress, TenantInfo } from './property.model';
 import { Socket } from 'ngx-socket-io';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -31,14 +31,18 @@ export class EdgeService {
   constructor(private http: HttpClient,
     private socket: Socket) { }
 
-  startEdge(msg: string) {
-    this.socket.emit('start', msg);
+  sendCMDToEdge(msg) {
+    this.socket.emit('cmd-in', msg);
   }
 
-  getStatusEdgeStart() :Observable <StatusEdgeStart>{
-   // return this.socket.fromEvent('start-edge').pipe(map((data) => JSON.stringify(data)));
-    return this.socket.fromEvent('start-edge');
+  getCMDProgress() :Observable <EdgeCMDProgress>{
+   // return this.socket.fromEvent('cmd-edge').pipe(map((data) => JSON.stringify(data)));
+    return this.socket.fromEvent('cmd-progress');
   }
+
+  getCMDResult() :Observable <string>{
+     return this.socket.fromEvent('cmd-result');
+   }
 
   getTenantInfo(): TenantInfo {
     return this.tenantInfo;

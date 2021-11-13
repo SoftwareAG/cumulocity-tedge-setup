@@ -1,7 +1,8 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { AlertService } from '@c8y/ngx-components';
+import { Observable, Subscription } from 'rxjs';
 import { EdgeService } from '../edge.service';
-import { StatusEdgeStart } from '../property.model';
+import { EdgeCMDProgress } from '../property.model';
 
 @Component({
   selector: 'app-certificate',
@@ -11,15 +12,41 @@ import { StatusEdgeStart } from '../property.model';
 export class CertificateComponent implements OnInit {
   refresh: EventEmitter<any> = new EventEmitter();
   public showACreateCertificate: boolean = false;
-  statusEdgeStart$: Observable<StatusEdgeStart>;
+  edgeCMDProgress$: Observable<EdgeCMDProgress>;
+  edgeCMDResult$: Observable<string>;
+  subscriptionProgress; subscriptionResult: Subscription
+  showStatusBar: boolean = false;
+  progress: number;
+  commandTerminal: string
 
-  constructor(private edgeService: EdgeService) { }
+  constructor(private edgeService: EdgeService, private alertService: AlertService) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.commandTerminal = "#"  +  "\r\n"
+     this.edgeCMDProgress$ = this.edgeService.getCMDProgress()
+     this.subscriptionProgress = this.edgeCMDProgress$.subscribe ((st: EdgeCMDProgress) =>  {
+        if ( st.status == 'error') {
+          this.alertService.danger (`Starting Thin Edge failed at step: ${st.progress}`)
+          this.showStatusBar = false
+        } else if (st.status == 'end') {
+          this.alertService.success (`Successfully started Thin Edge.`)
+          this.showStatusBar = false
+        } else  if (st.cmd) {
+          this.commandTerminal = this.commandTerminal + "\r\n" + "# " + st.cmd
+        }
+        this.progress = 100 * st.progress / st.total
+     })
+     this.edgeCMDResult$ = this.edgeService.getCMDResult()
+     this.subscriptionResult = this.edgeCMDResult$.subscribe ((st: string) =>  {
+        this.commandTerminal = this.commandTerminal + "\r\n"  + st
+   })
+  }
 
   startEdge()  {
-    this.edgeService.startEdge("Start Thin Edge");
-    this.statusEdgeStart$ = this.edgeService.getStatusEdgeStart()
+    this.edgeService.sendCMDToEdge({cmd: 'start'})
+    this.showStatusBar = true
+    this.commandTerminal = "Starting Thin Edge ..."
+   
   }
   private showManageCertificateDialog(): void {
     this.showACreateCertificate = true;
@@ -30,5 +57,10 @@ export class CertificateComponent implements OnInit {
   }
   public onCloseCertificateDialog(): void {
     this.hideManageCertificateDialog();
+  }
+
+  ngOnDestroy(){
+    this.subscriptionResult.unsubscribe();
+    this.subscriptionProgress.unsubscribe();
   }
 }

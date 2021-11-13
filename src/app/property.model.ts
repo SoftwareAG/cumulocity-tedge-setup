@@ -13,8 +13,9 @@ export class TenantInfo {
   tenantUrl: string
 }
 
-export class StatusEdgeStart {
+export class EdgeCMDProgress {
   status: string
   progress: number
   total: number
+  cmd: string
 }
