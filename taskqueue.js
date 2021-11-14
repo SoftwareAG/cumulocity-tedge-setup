@@ -10,17 +10,17 @@ class TaskQueue {
     taskRunning = false;
     jobNumber = 0;
 
-    constructor () {
+    constructor() {
         this.taskReady = new events.EventEmitter();
         this.runNextTask = this.runNextTask.bind(this);
         this.finishedTask = this.finishedTask.bind(this);
-        this.taskReady.on ('next-task',  this.runNextTask )
-        this.taskReady.on ('finished-task', (task, exitCode) => {
-            this.finishedTask(task, exitCode)          
+        this.taskReady.on('next-task', this.runNextTask)
+        this.taskReady.on('finished-task', (task, exitCode) => {
+            this.finishedTask(task, exitCode)
         })
     }
 
-    finishedTask( task, exitCode) {
+    finishedTask(task, exitCode) {
 
         this.taskRunning = false;
         // check error
@@ -30,20 +30,20 @@ class TaskQueue {
 
             // delete all tasks from queue
             this.tasks = [];
-        } else  {
-            console.log(`Before processing task: ${JSON.stringify(task)}, ${task.id}`);
+        } else {
+            console.log(`After processing task: ${JSON.stringify(task)}, ${task.id}`);
             // prepare next task
-           this.taskReady.emit('next-task')
-           // send job end when last task in job
-           if (task.id == task.total) {
-               this.notifier.sendJobEnd(task)
+            this.taskReady.emit('next-task')
+            // send job end when last task in job
+            if (task.id == task.total) {
+                this.notifier.sendJobEnd(task)
             }
         }
     }
 
     runNextTask() {
-        if (!this.taskRunning) {
-            // console.log ("Currently queued tasks", this.tasks)
+        if (!this.taskRunning && this.tasks.length > 0) {
+            //console.log("Currently queued tasks", this.tasks)
             this.taskRunning = true;
             let nextTask = this.tasks.shift();
             console.log(`Start processing task: ${JSON.stringify(nextTask)}, ${nextTask.job}:${nextTask.id}`);
@@ -52,35 +52,41 @@ class TaskQueue {
             taskSpawn.stdout.on('data', (data) => {
                 var buffer = new Buffer.from(data).toString();
                 this.notifier.sendResult(buffer)
-                //socket.emit('cmd-result', buffer);
             });
-        
+
+            taskSpawn.stderr.on('data', (data) => {
+                var buffer = new Buffer.from(data).toString();
+                this.notifier.sendResult(buffer)
+                console.log(`Error processing task: ${buffer}`);
+            });
             taskSpawn.on('exit', (exitCode) => {
+                console.log(`On (exit) processing task:`, nextTask);
                 this.taskReady.emit(`finished-task`, nextTask, exitCode);
             });
-        
+
             taskSpawn.on('error', (exitCode) => {
+                console.log(`On (exit) processing task:`, nextTask);
                 this.taskReady.emit(`finished-task`, nextTask, exitCode);
-            }); 
+            });
         }
     }
 
-    queueTasks (newTasks){
-        console.log ("Queued tasks", this.tasks)
+    queueTasks(newTasks) {
+        console.log("Queued tasks", this.tasks)
         let l = newTasks.length
         this.jobNumber++
         newTasks.forEach((element, i) => {
             this.tasks.push({
                 ...element,
-                id : i,
-                total : l ,
-                job : this.jobNumber            
+                id: i,
+                total: l,
+                job: this.jobNumber
             })
         });
-        console.log ("Queued tasks", this.tasks)
+        console.log("Queued tasks", this.tasks)
     }
 
-    start () {
+    start() {
         this.notifier.sendJobStart(this.tasks[0].total)
         this.taskReady.emit('next-task')
     }
@@ -88,9 +94,6 @@ class TaskQueue {
     registerNotifier(no) {
         this.notifier = no;
     }
-
-
-
 }
 
 module.exports = { TaskQueue }

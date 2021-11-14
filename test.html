@@ -1,25 +1,43 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 </head>
+
 <body>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-            var socket = io('http://localhost:9080');
-            socket.on('start-edge', function (message) {
-                  // create a new div element
-                    const newDiv = document.createElement("div");
-                    // and give it some content
-                    const newContent = document.createTextNode(JSON.stringify(message));
-                    // add the text node to the newly created div
-                    newDiv.appendChild(newContent);
-                document.body.appendChild(
-                    newDiv
-                );
-            });
-            socket.emit('start', {
-                    greeting: 'Hello Server'
-            });
-</script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io('http://localhost:9080');
+/*         socket.on('start-edge', function (message) {
+            // create a new div element
+            const newDiv = document.createElement("div");
+            // and give it some content
+            const newContent = document.createTextNode(JSON.stringify(message));
+            // add the text node to the newly created div
+            newDiv.appendChild(newContent);
+            document.body.appendChild(
+                newDiv
+            );
+        }); */
+        function emit() {
+            var channel = document.getElementById("channel").value;
+            var message = document.getElementById("message").value;
+            socket.emit(channel, message)
+        };
+    </script>
+    <form onsubmit="emit()">
+        <label for="channel">channel:</label>
+        <input type="text" id="channel" name="channel"><br><br>
+        <label for="message">message:</label>
+        <textarea type="text" id="message" name="message" rows="15" cols="80">
+            {
+                "cmd": "configure",
+                "deviceId" : "4711",
+                "tenantUrl" :"ck2.eu-latest.cumulocity.com"
+}
+            </textarea><br><br>
+        <input type="submit" value="Submit">
+    </form>
 </body>
+
 </html>

@@ -80,127 +80,190 @@ class ThinEdgeBackend {
         }
     }
 
-    configureEdge(deviceID, tenantURL) {
+    reset() {
+        deviceID = msg.deviceId
+        tenantUrl = msg.tenantUrl
         try {
             console.log('Starting certification creation via subprocess')
 
-            try {
-                const createCertification = spawn('tedge', ["cert", "create", "--device-id", deviceID]);
-                createCertification.on('close', (code) => {
-                    console.log(`Received result code from certification create: ${code}`);
-                    if (code == 0) {
-                        console.log('Starting config set of tenant url creation via subprocess')
-                        tenantConfig = spawn('tedge', ["config", "set", "c8y.url", tenantURL]);
-                        tenantConfig.on('close', (code) => {
-                            console.log(`Received result code from tenant configuration: ${code}`);
-                        })
-                    }
-                });
-            } catch (error) {
-                console.error('Error when creating certificate:', error);
-            }
+                tasks = [
+                    {
+                        cmd: 'echo',
+                        args: ["Starting resetting of certification via subprocess"]
+                    },
+                    {
+                        cmd: 'tedge ',
+                        args: ["cert", "remove"]
+                    },
+                    {
+                        cmd: 'echo',
+                        args: ["Starting disconnecting c8y via subproces"]
+                    },
+                    {
+                        cmd: 'tedge',
+                        args: ["disconnect", "c8y"]
+                    },
+                    {
+                        cmd: 'echo',
+                        args: ["Starting kill mosquitto via subproces"]
+                    },
+                    {
+                        cmd: 'pkill',
+                        args: ["mosquitto"]
+                    },
+                    {
+                        cmd: 'echo',
+                        args: ["Starting kill tedge via subprocess"]
+                    },
+                    {
+                        cmd: 'tedge',
+                        args: ["config", "set", "c8y.url", tenantURL]
+                    },
+                    {
+                        cmd: 'pkill',
+                        args: ["tedge_mapper"]
+                    },
+                    {
+                        cmd: 'echo',
+                        args: ["Starting kill tedge agent via subprocess"]
+                    },
+                    {
+                        cmd: 'pkill',
+                        args: ["tedge_agent"]
+                    },
+                    {
+                        cmd: 'echo',
+                        args: ["Finished resetting edge"]
+                    }]
+            taskQueue.queueTasks(tasks)
+            taskQueue.registerNotifier(this.notifier)
+            taskQueue.start()
         } catch (err) {
             console.error(`The following error occured: ${err.message}`)
             return 0, 0
         }
     }
 
-    start(socket) {
+    configure(msg) {
+        let deviceId = msg.deviceId
+        let tenantUrl = msg.tenantUrl
         try {
-            console.log(`Starting edge ${inStartMode}...`)
-            /*         tasks = [
-                        {
-                            cmd: 'tedge',
-                            args: ['connect', 'c8y']
-                        },
-                        {
-                            cmd: 'echo',
-                            args: ['"Adding allow anonymus true to config of mosquitto"']
-                        },
-                        {
-                            cmd: 'awk',
-                            args: ['"!/listener/"', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf', '>', 'temp && mv temp']
-                        },
-                        {
-                            cmd: 'echo',
-                            args: ['"Adding listenener 1883 to config of mosquitto"']
-                        },
-                        {
-                            cmd: 'echo',
-                            args: ['"listener 1883"', '>>', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
-                        },
-                        {
-                            cmd: 'awk',
-                            args: ['!/pid_file/'', '/etc/mosquitto/mosquitto.conf', '>',  'temp', '&&', 'mv temp /etc/mosquitto/mosquitto.conf']
-                        },
-                        {
-                            cmd: 'mosquitto',
-                            args: ['-c',  '/etc/mosquitto/mosquitto.conf', '-v', '-d']
-                        },
-                        {
-                            cmd: 'tedge',
-                            args: ['connect', 'c8y', '--test']
-                        },
-                        {
-                            cmd: 'tedge_mapper',
-                            args: ['c8y', '&']
-                        },
-                        {
-                            cmd: 'tedge_mapper',
-                            args: ['collectd', '&']
-                        },
-                        {
-                            cmd: 'collectd',
-                            args: ['&']
-                        },
-                        {
-                            cmd: 'tedge',
-                            args: ['config', 'set', 'software.plugin.default', 'docker']
-                        },
-                        {
-                            cmd: 'tedge_mapper',
-                            args: ['sm-c8y', '&']
-                        }
-                        ,
-                        {
-                            cmd: 'tedge_agent',
-                            args: ['&']
-                        },
-                    ] */
+            console.log(`Starting certification creation via subprocess ${deviceId}, ${tenantUrl}`)
 
             const tasks = [
+                    {
+                        cmd: 'tedge',
+                        args: ["cert", "create", "--device-id", deviceId]
+                    },
+                    {
+                        cmd: 'tedge',
+                        args: ["config", "set", "c8y.url", tenantUrl]
+                }]
+            taskQueue.queueTasks(tasks)
+            taskQueue.registerNotifier(this.notifier)
+            taskQueue.start()
+        } catch (err) {
+            console.error(`The following error occured: ${err.message}`)
+            return 0, 0
+        }
+    }
+
+    start() {
+        try {
+            console.log(`Starting edge ${inStartMode}...`)
+            const tasks = [
                 {
-                    cmd: 'ls',
-                    args: ['-la']
-                },
-                {
-                    cmd: 'ls',
-                    args: ['-la']
-                },
-                {
-                    cmd: 'ls',
-                    args: ['-ltr']
+                    cmd: 'tedge',
+                    args: ['connect', 'c8y']
                 },
                 {
                     cmd: 'echo',
-                    args: ['Task 3']
+                    args: ['Adding allow anonymus true to config of mosquitto']
                 },
                 {
-                    cmd: 'sleepy',
-                    args: ['5s']
+                    cmd: 'awk',
+                    args: ["'!/listener/'", '/olga/etc/tedge/mosquitto-conf/tedge-mosquitto.conf', '>', 'temp && mv temp']
                 },
                 {
-                    cmd: 'sleep',
-                    args: ['10s']
+                    cmd: 'echo',
+                    args: ['Adding listenener 1883 to config of mosquitto']
                 },
-            ];
+                {
+                    cmd: 'echo',
+                    args: ['listener 1883', '>>', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
+                },
+                {
+                    cmd: 'awk',
+                    args: ['\'!/pid_file/\'', ' / etc / mosquitto / mosquitto.conf', ' > ',  'temp', ' && ', 'mv temp / etc / mosquitto / mosquitto.conf']
+                        },
+                {
+                    cmd: 'mosquitto',
+                    args: ['-c', '/etc/mosquitto/mosquitto.conf', '-v', '-d']
+                },
+                {
+                    cmd: 'tedge',
+                    args: ['connect', 'c8y', '--test']
+                },
+                {
+                    cmd: 'tedge_mapper',
+                    args: ['c8y', '&']
+                },
+                {
+                    cmd: 'tedge_mapper',
+                    args: ['collectd', '&']
+                },
+                {
+                    cmd: 'collectd',
+                    args: ['&']
+                },
+                {
+                    cmd: 'tedge',
+                    args: ['config', 'set', 'software.plugin.default', 'docker']
+                },
+                {
+                    cmd: 'tedge_mapper',
+                    args: ['sm-c8y', '&']
+                }
+                ,
+                {
+                    cmd: 'tedge_agent',
+                    args: ['&']
+                },
+            ]
+
+            /*             const tasks = [
+                            {
+                                cmd: 'ls',
+                                args: ['-la']
+                            },
+                            {
+                                cmd: 'ls',
+                                args: ['-la']
+                            },
+                            {
+                                cmd: 'ls',
+                                args: ['-ltr']
+                            },
+                            {
+                                cmd: 'echo',
+                                args: ['Task 3']
+                            },
+                            {
+                                cmd: 'sleepy',
+                                args: ['5s']
+                            },
+                            {
+                                cmd: 'sleep',
+                                args: ['10s']
+                            },
+                        ]; */
 
             if (!inStartMode) {
                 taskQueue.queueTasks(tasks)
                 taskQueue.registerNotifier(this.notifier)
                 taskQueue.start()
             } else {
-                socket.emit('cmd-progress', {
+                this.socket.emit('cmd-progress', {
                     status: 'ignore',
                     progress: 0,
                     total: 0

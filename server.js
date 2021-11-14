@@ -79,6 +79,16 @@ app.get("/api/calc", function (req, res) {
     res.status(200).json({ result: a + b });
 });
 
+/*  "/api/downloads/certificate"
+ *   GET: certificate 
+ */
+app.get("/api/downloads/certificate", function (req, res) {
+    let deviceId = parseFloat(req.query.deviceId);
+    backend = new thinEdgeBackend.ThinEdgeBackend(null)
+    res.setHeader('Content-Disposition', 'attachment; filename=' + deviceId + '.pem');
+    res.status(200).sendFile("/etc/tedge/device-certs/tedge-certificate.pem");
+});
+
 /*  "/config"
  *   POST: Change proxy
  */
@@ -95,11 +105,16 @@ app.post("/config", function (req, res) {
 io.on('connection', function (socket) {
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
-        console.log(`New cmd: ${message}`, message);
+        msg = JSON.parse(message)
+        console.log(`New cmd: ${message}`, message.cmd, msg.cmd);
+        message = msg
         if (message.cmd == 'start')  {
-            backend.start(socket);
-            console.log(message);
-        } else {
+            backend.start();
+        } else if (message.cmd == 'configure')  {
+            backend.configure( message);
+        } else if (message.cmd == 'reset')  {
+            backend.reset();
+        } {
             socket.emit('cmd-progress', {
                 status: 'ignore',
                 progress: 0,
