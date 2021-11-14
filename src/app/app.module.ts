@@ -13,6 +13,8 @@ import { AnalysisComponent } from './analysis/analysis.component';
 import { ManageCertificateComponent } from './manage-certificate/manage-certificate.component';
 import { CloudComponent } from './cloud/cloud.component';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { EdgeNavigationFactory } from './navigation.factory';
+import { SetupComponent } from './setup/setup.component';
 
 
 const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
@@ -23,7 +25,10 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     BrowserModule,
     RouterModule.forRoot(),
     ngRouterModule.forRoot(
-      [{ path: 'Certificate', component: CertificateComponent }, { path: 'Analysis', component: AnalysisComponent }, { path: 'Cloud', component: CloudComponent }], // hook the route here
+      [{ path: 'certificate', component: CertificateComponent }, 
+      { path: 'analysis', component: AnalysisComponent }, 
+      { path: 'cloud', component: CloudComponent },
+      { path: 'setup', component: SetupComponent }], // hook the route here
       { enableTracing: false, useHash: true }
     ),
     CoreModule.forRoot(),
@@ -33,40 +38,9 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     SocketIoModule.forRoot(config),
     CommonModule
   ],
+  
   providers: [
-    {
-      provide: HOOK_NAVIGATOR_NODES,
-      useValue: [{
-        path: 'Certificate',
-        label: 'Certificate',
-        priority: 90,
-        icon: 'certificate',
-
-      }] as NavigatorNode[],
-      multi: true
-    },
-    {
-      provide: HOOK_NAVIGATOR_NODES,
-      useValue: [{
-        path: 'Analysis',
-        label: 'Analysis',
-        priority: 100,
-        icon: 'area-chart',
-
-      }] as NavigatorNode[],
-      multi: true
-    },
-    {
-      provide: HOOK_NAVIGATOR_NODES,
-      useValue: [{
-        path: 'Cloud',
-        label: 'Cloud',
-        priority: 100,
-        icon: 'cloud',
-
-      }] as NavigatorNode[],
-      multi: true
-    },
+    { provide: HOOK_NAVIGATOR_NODES, useClass: EdgeNavigationFactory, multi: true },
     {
       provide: APP_INITIALIZER,
       useFactory: initAppState,
@@ -75,7 +49,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     },
   ],
   bootstrap: [BootstrapComponent],
-  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent]
+  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent]
 })
 export class AppModule { }
 
