@@ -14,7 +14,7 @@ const fs = require('fs')
 const CONFIG_FILE = '/etc/tedge/edge.toml';
 // Create new instance of the express server
 const app = express();
-const backend = require('./backend.js');
+const thinEdgeBackend = require('./thinEdgeBackend.js');
 
 const options = createProxyMiddleware(
     {
@@ -24,9 +24,6 @@ const options = createProxyMiddleware(
         pathRewrite: { '^/c8y': '' }
     }
 );
-
-// avoid starting the edge twice
-var inStartMode = false
 
 // set up proxy 
 app.use('/c8y', options);
@@ -156,10 +153,10 @@ app.post("/config", function (req, res) {
 
 
 io.on('connection', function (socket) {
+    backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
         console.log(`New cmd: ${message}`, message);
-        if (!inStartMode && message.cmd == 'start')  {
-            inStartMode = true;
+        if (message.cmd == 'start')  {
             backend.start(socket);
             console.log(message);
         } else {

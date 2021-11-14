@@ -16,25 +16,29 @@ export class CertificateComponent implements OnInit {
   edgeCMDResult$: Observable<string>;
   subscriptionProgress; subscriptionResult: Subscription
   showStatusBar: boolean = false;
+  message: string
   progress: number;
   commandTerminal: string
 
   constructor(private edgeService: EdgeService, private alertService: AlertService) { }
 
   ngOnInit() {
-    this.commandTerminal = "#"  +  "\r\n"
+    this.commandTerminal = "# " 
+    this.message = "starting ..."
      this.edgeCMDProgress$ = this.edgeService.getCMDProgress()
      this.subscriptionProgress = this.edgeCMDProgress$.subscribe ((st: EdgeCMDProgress) =>  {
         if ( st.status == 'error') {
+          this.message = "failed"
           this.alertService.danger (`Starting Thin Edge failed at step: ${st.progress}`)
-          this.showStatusBar = false
-        } else if (st.status == 'end') {
+          //this.showStatusBar = false
+        } else if (st.status == 'end-job') {
+          this.message = "success"
           this.alertService.success (`Successfully started Thin Edge.`)
-          this.showStatusBar = false
-        } else  if (st.cmd) {
-          this.commandTerminal = this.commandTerminal + "\r\n" + "# " + st.cmd
+          //this.showStatusBar = false
+        } else if (st.cmd) {
+          this.commandTerminal = this.commandTerminal + "\r\n" + "# "  + st.cmd
         }
-        this.progress = 100 * st.progress / st.total
+        this.progress = 100 * (st.progress + 1) / st.total
      })
      this.edgeCMDResult$ = this.edgeService.getCMDResult()
      this.subscriptionResult = this.edgeCMDResult$.subscribe ((st: string) =>  {
