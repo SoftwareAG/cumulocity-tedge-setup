@@ -18,17 +18,6 @@ export class CloudComponent implements OnInit {
 
   ngOnInit() {
     this.tenantInfo = this.edgeService.getTenantInfo();
-/*     (async () => {
-      const data = await this.edgeService.initializeFetchClient(
-        {
-          username: "christof.strack@softwareag.com",
-          password: "Manage250!",
-          tenantUrl: "https://ck2.eu-latest.cumulocity.com",
-          tenantId: "t306817378"
-        } as TenantInfo
-      )
-      console.log("Tried login:", data)
-    })(); */
     this.initForm();
   }
 

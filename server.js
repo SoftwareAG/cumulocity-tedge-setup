@@ -40,11 +40,6 @@ var distDir = __dirname + "/dist/cumulocity-tedge-setup";
 //app.use("/home", express.static(distDir));
 app.use(express.static(distDir));
 
-// Init the server
-/* var server = app.listen(process.env.PORT || 9080, function () {
-    var port = server.address().port;
-    console.log("App now running on port", port);
-}); */
 
 const server = http.createServer(app);
 // Pass a http.Server instance to the listen method
@@ -55,7 +50,6 @@ server.listen(process.env.PORT || 9080, function () {
     var port = server.address().port;
     console.log("App now running on port", port);
 });
-
 
 
 /*  "/api/status"
@@ -76,8 +70,6 @@ app.get("/api/update", function (req, res) {
     res.status(200).json({ result: "ok" });
 });
 
-
-
 /*  "/api/calc"
  *   GET: Calc 
  */
@@ -85,58 +77,6 @@ app.get("/api/calc", function (req, res) {
     let a = parseFloat(req.query.a);
     let b = parseFloat(req.query.b);
     res.status(200).json({ result: a + b });
-});
-
-/*  "/api/cmd"
- *   POST: Run a command
- */
-app.post("/api/cmd", function (req, res) {
-    let cmd = req.body.cmd
-    let args = req.body.args
-    let sent = false;
-    console.log(`cmd called: ${cmd} with ${args}`);
-    /*     ls.stdout.on("data", data => {
-            console.log(`stdout: ${data}`);
-            res.status(200).json({ data:  data });
-        }); */
-    try {
-        var stdoutChunks = [], stderrChunks = [];
-        const child = spawn(cmd, args);
-
-
-        child.stdout.on('data', (data) => {
-            stdoutChunks = stdoutChunks.concat(data);
-        });
-
-        child.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
-            res.status(500).json(data);
-            sent = true;
-        });
-
-        child.on('error', function (err) {
-            console.log('Error : ' + err);
-            res.status(500).json(err);
-            sent = true;
-        });
-
-        child.stdout.on('end', (data) => {
-            console.log('stdout:', data);
-            if (!sent) {
-                var stdoutContent = Buffer.concat(stdoutChunks).toString();
-                console.log(`stdout: ${stdoutContent}`);
-                res.status(200).json(stdoutContent);
-            }
-        });
-
-        child.stdout.on('close', () => {
-            console.log('calling close!');
-        });
-
-    } catch (err) {
-        console.log("exception: " + err)
-        res.status(500).json({ data: err });
-    }
 });
 
 /*  "/config"

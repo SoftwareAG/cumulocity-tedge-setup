@@ -30,24 +30,7 @@ export class AnalysisComponent implements OnInit {
       .then((result: any) => {
         this.result = result.result;
       });
-
-    this.edgeService
-      .runCmd("ls", ["-la"])
-      .then((result: any) => {
-        this.cmd = result;
-        //console.log("Result in angular:", result);
-      });
-
-    this.edgeService
-      .runCmd("lxwrong", ["-la"])
-      .then((result: any) => {
-        this.cmdError = result.data;
-        console.log("Should never be called:", result.data);
-      }).catch(
-        (err) => {
-          this.cmdError = err.message;
-          console.log("Should be called, since error:", err);
-      });
+      
   }
 
 }
