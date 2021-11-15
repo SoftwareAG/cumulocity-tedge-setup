@@ -72,7 +72,7 @@ app.get("/api/configuration", function (req, res) {
 
 
 /*  "/config"
- *   POST: Change proxy
+ *   POST: Change proxy to communicate with cloud instance. This is required to avoid CORS errors
  */
 app.post("/config", function (req, res) {
     let proxy = req.body.proxy
