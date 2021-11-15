@@ -27,11 +27,11 @@
     </script>
     <form onsubmit="emit()">
         <label for="channel">channel:</label>
-        <input type="text" id="channel" name="channel"><br><br>
+        <input type="text" id="channel" name="channel" value='cmd-in'><br><br>
         <label for="message">message:</label>
         <textarea type="text" id="message" name="message" rows="15" cols="80">
-            {
-                "cmd": "configure",
+{
+                "cmd": "start",
                 "deviceId" : "4711",
                 "tenantUrl" :"ck2.eu-latest.cumulocity.com"
 }

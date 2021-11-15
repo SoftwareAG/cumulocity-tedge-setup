@@ -28,14 +28,24 @@ class TaskQueue {
             console.error(`Error (event exit): ${exitCode} on task ${task.id}`)
             this.notifier.sendError(task, exitCode)
 
+            //continue if task failure is accepted
+            if (task.continueOnError) {
+                // prepare next task
+                this.taskReady.emit('next-task')
+                // send job end when last task in job
+                if (task.id == task.total) {
+                    this.notifier.sendJobEnd(task)
+                }
+            } else {
             // delete all tasks from queue
             this.tasks = [];
+            }
         } else {
             console.log(`After processing task: ${JSON.stringify(task)}, ${task.id}`);
             // prepare next task
             this.taskReady.emit('next-task')
             // send job end when last task in job
-            if (task.id == task.total) {
+            if ((task.id + 1) == task.total) {
                 this.notifier.sendJobEnd(task)
             }
         }
@@ -71,7 +81,7 @@ class TaskQueue {
         }
     }
 
-    queueTasks(newTasks) {
+    queueTasks(newTasks, continueOnError) {
         console.log("Queued tasks", this.tasks)
         let l = newTasks.length
         this.jobNumber++
@@ -80,7 +90,8 @@ class TaskQueue {
                 ...element,
                 id: i,
                 total: l,
-                job: this.jobNumber
+                job: this.jobNumber,
+                continueOnError: element.continueOnError ? element.continueOnError : continueOnError
             })
         });
         console.log("Queued tasks", this.tasks)

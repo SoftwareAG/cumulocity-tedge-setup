@@ -9,9 +9,6 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const { spawn } = require("child_process");
 const events = require('events');
 const socketIO  = require('socket.io')
-const ConfigParser = require('configparser');
-const fs = require('fs')
-const CONFIG_FILE = '/etc/tedge/edge.toml';
 // Create new instance of the express server
 const app = express();
 const thinEdgeBackend = require('./thinEdgeBackend.js');
@@ -52,42 +49,27 @@ server.listen(process.env.PORT || 9080, function () {
 });
 
 
-/*  "/api/status"
- *   GET: Get server status
- */
-app.get("/api/status", function (req, res) {
-    res.status(200).json({ status: "UP" });
-});
-
-/*  "/api/update"
- *   GET: Update 
- */
-app.get("/api/update", function (req, res) {
-    let name = req.query.name
-    let description = req.query.description
-    let isComplex = (req.query.isComplex === 'true');
-    console.log("Certificate update", name, description, isComplex);
-    res.status(200).json({ result: "ok" });
-});
-
-/*  "/api/calc"
- *   GET: Calc 
- */
-app.get("/api/calc", function (req, res) {
-    let a = parseFloat(req.query.a);
-    let b = parseFloat(req.query.b);
-    res.status(200).json({ result: a + b });
-});
-
-/*  "/api/downloads/certificate"
+/*  "/api/download/certificate"
  *   GET: certificate 
  */
-app.get("/api/downloads/certificate", function (req, res) {
-    let deviceId = parseFloat(req.query.deviceId);
+app.get("/api/certificate", function (req, res) {
+    let deviceId = parseInt(req.query.deviceId);
     backend = new thinEdgeBackend.ThinEdgeBackend(null)
     res.setHeader('Content-Disposition', 'attachment; filename=' + deviceId + '.pem');
     res.status(200).sendFile("/etc/tedge/device-certs/tedge-certificate.pem");
 });
+
+
+/*  "/api/configuration"
+ *   GET: configuration 
+ */
+app.get("/api/configuration", function (req, res) {
+
+    let cfg = new thinEdgeBackend.ThinEdgeBackend.getConfiguration()
+    res.setHeader('Content-Disposition', 'attachment; filename=' + deviceId + '.pem')
+    res.status(200).json(cfg)
+});
+
 
 /*  "/config"
  *   POST: Change proxy
