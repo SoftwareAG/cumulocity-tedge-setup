@@ -15,6 +15,7 @@ import { CloudComponent } from './cloud/cloud.component';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { EdgeNavigationFactory } from './navigation.factory';
 import { SetupComponent } from './setup/setup.component';
+import { EdgeService } from './edge.service';
 
 
 const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
@@ -25,8 +26,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     BrowserModule,
     RouterModule.forRoot(),
     ngRouterModule.forRoot(
-      [{ path: 'certificate', component: CertificateComponent }, 
-      { path: 'analysis', component: AnalysisComponent }, 
+      [{ path: 'analysis', component: AnalysisComponent }, 
       { path: 'cloud', component: CloudComponent },
       { path: 'setup', component: SetupComponent }], // hook the route here
       { enableTracing: false, useHash: true }
@@ -47,6 +47,12 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
       multi: true,
       deps: [AppStateService],
     },
+/*     {
+      provide: APP_INITIALIZER,
+      useFactory: initServicesFactory,
+      multi: true,
+      deps: [EdgeService,],
+    }, */
   ],
   bootstrap: [BootstrapComponent],
   declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent]
@@ -93,3 +99,13 @@ export function initAppState(appStateService: AppStateService) {
     appStateService.currentTenant = new BehaviorSubject <ICurrentTenant> ( edgeTenant);
   };
 }
+
+/* export function initServicesFactory(
+  edgeService: EdgeService
+) {
+  return async () => {
+    console.log('initServicesFactory - started');
+    const config = await edgeService.loadConfiguration();
+    console.log('initServicesFactory - completed');
+  };
+} */

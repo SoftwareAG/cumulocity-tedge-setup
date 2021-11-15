@@ -6,11 +6,35 @@ export class CustomCertificate {
   path: string;
 }
 
-export class TenantInfo {
-  username:string
-  password:string
-  tenantId:string
-  tenantUrl: string
+export class ThinEdgeConfiguration {
+
+  tenantUrl?: string
+  deviceId?: string
+
+/*   public constructor(
+    fields?: {
+      username?:string
+      password?:string
+      tenantUrl?: string
+      deviceId?: string
+    }) {
+    if (fields) Object.assign(this, fields);
+  }
+
+  isConfigured():boolean {
+    let result = false;
+    if (this.tenantUrl && this.deviceId ) {
+        result = true
+    } else {
+       result = false
+    }
+    return result
+  } */
+}
+
+export class CloudConfiguration{
+    username?:string
+    password?:string
 }
 
 export class EdgeCMDProgress {

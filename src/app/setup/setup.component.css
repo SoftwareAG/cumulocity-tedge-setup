@@ -1,0 +1,31 @@
+.commandTerminal {
+    background-color: #000;
+    border: 1px solid #000;
+    color: #00ff00;
+    padding: 8px;
+    font-family: courier new;
+}
+
+.btn-group button {
+    padding: 10px 24px; /* Some padding */
+    cursor: pointer; /* Pointer/hand icon */
+    float: left; /* Float the buttons side by side */
+  }
+  
+  /* Clear floats (clearfix hack) */
+  .btn-group:after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+  /*
+  .btn-group button:not(:last-child) {
+    border-right: au; /* Prevent double borders 
+  }
+  */
+  
+  /* Add a background color on hover */
+  .btn-group button:hover {
+
+  }

@@ -3,7 +3,7 @@ const { spawn } = require("child_process");
 const events = require('events');
 const ConfigParser = require('configparser');
 const fs = require('fs')
-const CONFIG_FILE = '/etc/tedge/edge.toml';
+const CONFIG_FILE = '/etc/tedge/tedge.toml';
 const { TaskQueue } = require("./taskqueue");
 // emmitter to signal completion of current task
 const taskQueue = new TaskQueue()
@@ -62,10 +62,21 @@ class ThinEdgeBackend {
 
     static getConfiguration() {
         try {
-            toml = new ConfigParser()
+            let toml = new ConfigParser()
             toml.read(CONFIG_FILE)
-            deviceId = toml['Device']['id']
-            tenantUrl = toml['MQTT']['URL']
+            let deviceId
+            try {
+                deviceId = toml['device']['id']
+            } catch (err){
+                deviceId = undefined
+            }
+            let tenantUrl 
+            try {
+                tenantUrl = 'https://' + toml['mqtt']['url']
+            } catch (err){
+                tenantUrl = undefined
+            }
+            
             return {
                 deviceId: deviceId,
                 tenantUrl: tenantUrl
@@ -89,7 +100,7 @@ class ThinEdgeBackend {
                     args: ["Starting resetting of certification via subprocess"]
                 },
                 {
-                    cmd: 'tedge ',
+                    cmd: 'tedge',
                     args: ["cert", "remove"]
                 },
                 {

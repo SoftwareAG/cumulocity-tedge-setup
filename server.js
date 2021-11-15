@@ -53,8 +53,8 @@ server.listen(process.env.PORT || 9080, function () {
  *   GET: certificate 
  */
 app.get("/api/certificate", function (req, res) {
-    let deviceId = parseInt(req.query.deviceId);
-    backend = new thinEdgeBackend.ThinEdgeBackend(null)
+    let deviceId = req.query.deviceId;
+    console.log(`Download certificate for : ${deviceId}`);
     res.setHeader('Content-Disposition', 'attachment; filename=' + deviceId + '.pem');
     res.status(200).sendFile("/etc/tedge/device-certs/tedge-certificate.pem");
 });
@@ -64,9 +64,8 @@ app.get("/api/certificate", function (req, res) {
  *   GET: configuration 
  */
 app.get("/api/configuration", function (req, res) {
-
-    let cfg = new thinEdgeBackend.ThinEdgeBackend.getConfiguration()
-    res.setHeader('Content-Disposition', 'attachment; filename=' + deviceId + '.pem')
+    let cfg = thinEdgeBackend.ThinEdgeBackend.getConfiguration()
+    console.log(`Loading configuration`, cfg);
     res.status(200).json(cfg)
 });
 
@@ -87,9 +86,10 @@ app.post("/config", function (req, res) {
 io.on('connection', function (socket) {
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
-        msg = JSON.parse(message)
+/*         msg = JSON.parse(message)
         console.log(`New cmd: ${message}`, message.cmd, msg.cmd);
-        message = msg
+        message = msg */
+        console.log(`New cmd: ${message}`, message.cmd);
         if (message.cmd == 'start')  {
             backend.start();
         } else if (message.cmd == 'configure')  {

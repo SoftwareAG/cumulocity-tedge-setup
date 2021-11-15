@@ -45,3 +45,4 @@ testem.log
 Thumbs.db
 src/assets/.gitkeep
 temp
+src/app/TEST_CONFIG.ts

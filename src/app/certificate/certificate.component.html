@@ -23,15 +23,3 @@
     </c8y-manage-certificate>
   </div>
 </div>
-
-<div class="card">
-  <div class="card-block">
-    <div class="form-group">
-      <button type="button" (click)="startEdge()">Start Edge</button>
-    </div>
-  </div>
-  <c8y-progress-bar *ngIf= "showStatusBar" [progress]="progress" [message]="message"></c8y-progress-bar>
-  <div>
-    <textarea class="commandTerminal" cols="80" rows="20">{{commandTerminal}}</textarea>
-  </div>
-</div>

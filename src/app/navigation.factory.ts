@@ -15,24 +15,15 @@ export class EdgeNavigationFactory implements NavigatorNodeFactory {
             priority: 2,
             routerLinkExact: false
         });
-
-        let Certificate: NavigatorNode = new NavigatorNode({
-            path: '/certificate',
-            label: _('Certificate'),
-            priority: 90,
-            icon: 'certificate',
-            children: [Setup],
-            routerLinkExact: false
-        });
-
+       
         let Analysis: NavigatorNode = new NavigatorNode({
             path: '/analysis',
             label: _('Analysis'),
-            priority: 100,
+            priority: 300,
             icon: 'area-chart',
             routerLinkExact: false
         });
-
+        
         let Cloud: NavigatorNode = new NavigatorNode({
             path: '/cloud',
             label: _('Cloud'),
@@ -41,7 +32,15 @@ export class EdgeNavigationFactory implements NavigatorNodeFactory {
             icon: 'cloud',
             routerLinkExact: false
         });
-        this.nav.push(Certificate, Analysis, Cloud);
+        let Edge: NavigatorNode = new NavigatorNode({
+            label: _('Edge'),
+            name: 'egde',
+            priority: 200,
+            children: [Setup],
+            icon: 'upload',
+            routerLinkExact: false
+        });
+        this.nav.push(Analysis, Edge, Cloud);
     }
 
     get() {

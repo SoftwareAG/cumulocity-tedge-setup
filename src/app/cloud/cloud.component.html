@@ -1,37 +1,52 @@
-<div class="card">
-  <div class="card-block">
-    <div class="form-group" [formGroup]="loginForm">
-      <div class="row">
-        <c8y-form-group class="col-lg-4">
-          <label translate>Tenant URL</label>
-          <input class="form-control" type="text" formControlName="tenantUrl"
-            placeholder="https://your-tenant.cumulocity.com" #tenantUrlRef required />
-          <c8y-messages>
-            <c8y-message *ngIf="!loginForm.untouched && !tenantUrlRef.value" translate>This field is required.
-            </c8y-message>
-          </c8y-messages>
-          <label title="Tenant ID">Tenant ID</label>
-          <input class="form-control" type="text" formControlName="tenantId" placeholder="your tenantId, e.g. t30000000"
-            #tenantIdlRef required />
-        </c8y-form-group>
+<div class="card-group">
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-header">Configuration properties</div>
+      <div class="card-block my-card-body">
+        <div class="form-group" [formGroup]="loginForm">
+          <div class="row">
+            <c8y-form-group class="col-lg-8">
+              <label translate>Tenant URL</label>
+              <input class="form-control" type="text" formControlName="tenantUrl"
+                placeholder="https://your-tenant.cumulocity.com" #tenantUrlRef required
+                [readonly]="edgeConfiguration?.deviceId && edgeConfiguration?.tenantUrl" />
+            </c8y-form-group>
+          </div>
+          <div class="row">
+            <c8y-form-group class="col-lg-8">
+              <label translate>Username</label>
+              <input class="form-control" formControlName="username" placeholder="your username" #tusernameRef
+                required />
+              <label translate>Password</label>
+              <input class="form-control" formControlName="password" placeholder="your password" type="password"
+                #passwordlRef required />
+            </c8y-form-group>
+          </div>
+          <button (click)="login()">Test Login to Tenant</button>
+        </div>
       </div>
-      <div class="row">
-        <c8y-form-group class="col-lg-4">
-          <label translate>Username</label>
-          <input class="form-control" formControlName="username" placeholder="your username" #tusernameRef required />
-          <label translate>Password</label>
-          <input class="form-control" formControlName="password" placeholder="your password" type="password"
-            #passwordlRef required />
-        </c8y-form-group>
-      </div>
-      <button (click)="login()">Login to Tenant</button>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="card">
+      <table>
+        <tbody *ngIf="cloudDeviceDetails">
+          <tr *ngFor="let attribute of  Object.keys(cloudDeviceDetails); index as i">
+            <td scope="row">{{attribute | titlecase}}:</td>
+            <td scope="row">{{cloudDeviceDetails[attribute]}}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
+
+
 <div class="card">
   <div class="card-block">
     <div class="form-group">
-      <button type="button" (click)="createMeasurement()">Create Test Measurement</button>
+      <input class="form-control" placeholder="your deviceId" #deviceIdRef required />
+      <button type="button" (click)="createMeasurement(deviceIdRef.value)">Create Test Measurement</button>
     </div>
   </div>
 </div>

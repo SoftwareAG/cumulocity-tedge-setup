@@ -1,1 +1,33 @@
-<p>setup works!</p>
+<div class="card">
+    <div class="card-block">
+        <div class="form-group" [formGroup]="configutationForm">
+            <c8y-form-group class="col-lg-4">
+                <label translate>Tenant URL</label>
+                <input class="form-control" type="text" formControlName="tenantUrl"
+                    placeholder="https://your-tenant.cumulocity.com" #tenantUrlRef required [readonly]="edgeConfiguration?.deviceId && edgeConfiguration?.tenantUrl"/>
+                <label title="Device ID">External Device Id</label>
+                <input class="form-control" type="text" formControlName="deviceId" placeholder="external Device Id"  [readonly]="edgeConfiguration?.deviceId && edgeConfiguration?.tenantUrl"
+                    #externalDeviceIdRef required />
+            </c8y-form-group>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-block">
+        <div class="container">
+            <div class="btn-group" style="width:100%">
+                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="configureEdge()">Configure Edge</button>
+                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="downloadCertificate()">Download Certificate</button>
+                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="startEdge()">Start Edge</button>
+                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="resetEdge()">Reset Edge</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-block">
+        <c8y-progress-bar *ngIf="showStatusBar" [progress]="progress" [message]="message"></c8y-progress-bar>
+        <div>
+            <textarea readonly class="commandTerminal" cols="100" rows="20">{{commandTerminal}}</textarea>
+        </div>
+    </div>
+</div>

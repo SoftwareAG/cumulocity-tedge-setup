@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Client, BasicAuth, FetchClient, MeasurementService, IMeasurementCreate, IResult, IMeasurement, IFetchOptions, IFetchResponse } from '@c8y/client';
-import { EdgeCMDProgress, TenantInfo } from './property.model';
+import { IExternalIdentity, Client, BasicAuth, FetchClient, MeasurementService, IMeasurementCreate, IResult, IMeasurement, IFetchOptions, IFetchResponse, IdentityService, InventoryService } from '@c8y/client';
+import { CloudConfiguration, EdgeCMDProgress, ThinEdgeConfiguration } from './property.model';
 import { Socket } from 'ngx-socket-io';
-import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { CONFIG_CLOUD } from './TEST_CONFIG'
 
-const STATUS_URL = '/api/status';
-const CALC_URL = '/api/calc';
-const CMD_URL = '/api/cmd';
 const UPDATE_URL = '/api/update';
 const C8Y_URL = 'c8y';
 const LOGIN_URL = `/tenant/currentTenant`
-const CONFIG_URL = '/config';
+const CONFIGURATION_URL = '/api/configuration'
+const PROXY_CONFIG_URL = '/config';
+const DOWNLOADCERTIFICATE_URL = "/api/certificate";
 
 @Injectable({
   providedIn: 'root'
@@ -21,46 +20,101 @@ export class EdgeService {
 
   private fetchClient: FetchClient;
   private measurementService: MeasurementService;
-  private tenantInfo: TenantInfo = {
-    username: 'christof.strack@softwareag.com',
-    password: 'Manage250!',
-    tenantId: 't306817378',
-    tenantUrl: 'https://ck2.eu-latest.cumulocity.com'
-  };
+  private edgeConfiguration: ThinEdgeConfiguration 
+  private inventoryService: InventoryService;
+  private identityService: IdentityService;
+  private cloudConfiguration: CloudConfiguration;
 
   constructor(private http: HttpClient,
-    private socket: Socket) { }
+    private socket: Socket) {
+    //Object.assign(this.edgeConfiguration, CONFIG_CLOUD)
+  }
+
+/*   async loadConfiguration(): Promise<any> {
+    const config = await this.http
+      .get<ThinEdgeConfiguration>(CONFIGURATION_URL)
+      .toPromise();
+    Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
+    return config;
+  } */
 
   sendCMDToEdge(msg) {
     this.socket.emit('cmd-in', msg);
   }
 
-  getCMDProgress() :Observable <EdgeCMDProgress>{
-   // return this.socket.fromEvent('cmd-edge').pipe(map((data) => JSON.stringify(data)));
+  getCMDProgress(): Observable<EdgeCMDProgress> {
+    // return this.socket.fromEvent('cmd-edge').pipe(map((data) => JSON.stringify(data)));
     return this.socket.fromEvent('cmd-progress');
   }
 
-  getCMDResult() :Observable <string>{
-     return this.socket.fromEvent('cmd-result');
-   }
-
-  getTenantInfo(): TenantInfo {
-    return this.tenantInfo;
+  getCMDResult(): Observable<string> {
+    return this.socket.fromEvent('cmd-result');
   }
 
-  initializeFetchClient(tenantInfo: TenantInfo): Promise<void | any> {
-    this.tenantInfo = tenantInfo;
+  getEdgeConfiguration(): Promise<ThinEdgeConfiguration> {
+    return this.http
+      .get<ThinEdgeConfiguration>(CONFIGURATION_URL)
+      .toPromise()
+      .then ( config => {
+        Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
+        return this.edgeConfiguration
+      })
+  }
+
+  downloadCertificate(): any {
+    const promise = new Promise((resolve, reject) => {
+      const apiURL = DOWNLOADCERTIFICATE_URL;
+      const params = new HttpParams({
+        fromObject: {
+          deviceId: this.edgeConfiguration.deviceId,
+        }
+      });
+      this.http
+        .get(apiURL, { params: params, responseType: 'blob' as 'json' })
+        .toPromise()
+        .then((res: any) => {
+          // Success
+          resolve(res);
+        },
+          err => {
+            // Error
+            reject(err);
+          }
+        );
+    });
+    return promise;
+  }
+
+  getDetailsCloudDevice(externalDeviceId: string) {
+    const identity: IExternalIdentity = {
+      type: 'c8y_Serial',
+      externalId: externalDeviceId
+    };
+    return this.identityService.detail(identity).then ( result => {
+          return this.inventoryService.detail(result.data.managedObject.id)
+    })
+/*     (async () => {
+      const { data, res } = await this.identityService.detail(identity)
+      console.log("External", data, res)
+    })(); */
+  }
+
+
+  initializeFetchClient(edgeConfiguration: ThinEdgeConfiguration, cloudConfiguration: CloudConfiguration): Promise<void | any> {
+    this.cloudConfiguration = cloudConfiguration;
     const auth = new BasicAuth({
-      user: this.tenantInfo.username,
-      password: this.tenantInfo.password,
-      tenant: this.tenantInfo.tenantId
+      user: this.cloudConfiguration.username,
+      password: this.cloudConfiguration.password,
     });
     const client = new Client(auth, C8Y_URL);
     client.setAuth(auth);
     this.fetchClient = client.core;
     this.measurementService = new MeasurementService(this.fetchClient);
+    this.inventoryService = new InventoryService(this.fetchClient);
+    this.identityService = new IdentityService(this.fetchClient);
+
     const params = {
-      proxy: this.tenantInfo.tenantUrl
+      proxy: this.edgeConfiguration.tenantUrl
     }
 
     const options: IFetchOptions = {
@@ -78,7 +132,7 @@ export class EdgeService {
         return err;
       })
 
-    return this.http.post(CONFIG_URL, params)
+    return this.http.post(PROXY_CONFIG_URL, params)
       .toPromise()
       .then(response => {
         //console.log ("Resulting cmd:", response);
@@ -119,46 +173,6 @@ export class EdgeService {
         );
     });
     return promise;
-  }
-
-  // Get the status
-  getStatus(): Promise<void | any> {
-    return this.http.get(STATUS_URL)
-      .toPromise()
-      .then(response => {
-        return response;
-      })
-      .catch(this.error);
-  }
-
-  // calc
-  calc(a: number, b: number): Promise<void | any> {
-    const params = new HttpParams({
-      fromObject: {
-        a: a.toString(),
-        b: b.toString(),
-      }
-    });
-    return this.http.get(CALC_URL, { params: params })
-      .toPromise()
-      .then(response => {
-        return response;
-      })
-      .catch(this.error);
-  }
-
-  // run cmd
-  runCmd(cmd: string, args: string[]): Promise<void | any> {
-    const params = {
-      cmd: cmd,
-      args: args
-    }
-    return this.http.post(CMD_URL, params)
-      .toPromise()
-      .then(response => {
-        //console.log ("Resulting cmd:", response);
-        return response;
-      })
   }
 
   // Error handling
