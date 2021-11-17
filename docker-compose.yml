@@ -1,7 +1,7 @@
 version: "3.0"
 services:
   tedge:
-   build: ./tedge
+   build: .
    hostname: tedge
    container_name: thin-edge-setup.io
    expose:
