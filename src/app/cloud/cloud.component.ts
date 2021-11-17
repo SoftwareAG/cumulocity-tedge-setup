@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { IManagedObject, IMeasurementCreate } from '@c8y/client';
 import { AlertService } from '@c8y/ngx-components';
 import { EdgeService } from '../edge.service';
-import { CloudConfiguration, ThinEdgeConfiguration } from '../property.model';
+//import { ThinEdgeConfiguration } from '../property.model';
 
 @Component({
   selector: 'app-cloud',
@@ -14,73 +14,61 @@ export class CloudComponent implements OnInit {
 
   constructor(private formBuilder: FormBuilder, private edgeService: EdgeService, private alertService: AlertService) { }
   loginForm: FormGroup;
-  edgeConfiguration: ThinEdgeConfiguration;
-  cloudConfiguration : CloudConfiguration;
+  edgeConfiguration: any = {}
   Object : Object ;
   cloudDeviceDetails: IManagedObject;
 
   ngOnInit() {
     this.edgeService.getEdgeConfiguration().then ( config => {
       this.edgeConfiguration = config
+      this.loginForm.setValue ({
+        username: [ this.edgeConfiguration.username ?  this.edgeConfiguration.username :''],
+        tenantUrl: [this.edgeConfiguration['c8y.url'] ?  this.edgeConfiguration['c8y.url']: ''],
+        password: [this.edgeConfiguration.password ? this.edgeConfiguration.password: ''],
+      })
+      console.log("Intialized configuration:", config)
     })
     this.initForm();
   }
 
   initForm() {
     this.loginForm = this.formBuilder.group({
-      username: [this.cloudConfiguration.username],
-      tenantUrl: [this.edgeConfiguration.tenantUrl],
-      password: [this.cloudConfiguration.password],
+      username: [ this.edgeConfiguration.username ?  this.edgeConfiguration.username :''],
+      tenantUrl: [this.edgeConfiguration['c8y.url'] ?  this.edgeConfiguration['c8y.url']: ''],
+      password: [this.edgeConfiguration.password ? this.edgeConfiguration.password: ''],
     });
   }
 
-
   login() {
+    const up = {
+      'c8y.url': this.loginForm.value.tenantUrl,
+      username: this.loginForm.value.username,
+      password: this.loginForm.value.password,
+    } 
+    this.edgeService.updateEdgeConfiguration (up);
+
     (async () => {
       try{
-        const res = await this.edgeService.initializeFetchClient(
-          { tenantUrl:  this.loginForm.value.tenantUrl }, 
-          { password:  this.loginForm.value.password,  username: this.loginForm.value.username}
-        )
-        if (res.status == 200) {
-          this.alertService.success("Successfully logged in!")
-        } else {
-          this.alertService.danger("Error login:" + res.statusText)
-        }
-        console.log("Tried to login:", res)
-
+        const res = await this.edgeService.initializeFetchClient()
+        console.log("Login response:", res)
+        this.alertService.success("Could log in to cloud tenant")
       } catch (err){
-        this.alertService.danger("Error when trying tp login: " + err.message)
+        this.alertService.danger("Failed to login: " + err.message)
       }
     })();
 
     (async () => {
       try{
-        const {data, res} = await this.edgeService.getDetailsCloudDevice( this.edgeConfiguration.deviceId )
+        const {data, res} = await this.edgeService.getDetailsCloudDevice( this.edgeConfiguration['device.id'] )
+        // ignore those values that are object,because they look ugly when printed    
+        Object.keys(data)
+        .filter(key => typeof data[key] == 'object' )
+        .forEach(key => delete data[key]);
         this.cloudDeviceDetails = data
-/*         if (res.status == 200) {
-          this.alertService.success("Successfully logged in!")
-        } else {
-          this.alertService.danger("Error login:" + res.statusText)
-        } */
-        console.log("Tried to login:", res)
-
+        console.log("Retrieved cloud data:", res)
       } catch (err){
-        this.alertService.danger("Error when trying tp login: " + err.message)
+        this.alertService.danger("Failed to retrieve details: " + err.message)
       }
     })();
   }
-
-  createMeasurement(deviceId: string) {
-    const t = Math.random() * 30 + 15
-    const mandantoryObject: Partial<IMeasurementCreate> = {
-      sourceId: deviceId,
-      c8y_Temperature: { T: { unit: '°C', value: t } },
-    };
-    (async () => {
-      const { data, res } = await this.edgeService.createMeasurement(mandantoryObject);
-      console.log("New measure:", data)
-    })();
-  }
-
 }

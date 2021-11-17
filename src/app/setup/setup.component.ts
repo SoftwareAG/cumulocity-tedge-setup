@@ -3,13 +3,13 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { AlertService } from '@c8y/ngx-components';
 import { Observable, Subscription } from 'rxjs';
 import { EdgeService } from '../edge.service';
-import { EdgeCMDProgress, ThinEdgeConfiguration } from '../property.model';
+import { EdgeCMDProgress } from '../property.model';
 
 
 @Component({
   selector: 'app-setup',
   templateUrl: './setup.component.html',
-  styleUrls: ['./setup.component.css']
+  styleUrls: ['./setup.component.scss']
 })
 export class SetupComponent implements OnInit {
   refresh: EventEmitter<any> = new EventEmitter();
@@ -23,15 +23,13 @@ export class SetupComponent implements OnInit {
   commandTerminal: string
   command: string
   configutationForm: FormGroup
-  edgeConfiguration: ThinEdgeConfiguration
+  edgeConfiguration: any = {}
 
   constructor(private edgeService: EdgeService, private alertService: AlertService, private formBuilder: FormBuilder) { }
 
   ngOnInit() {
     this.initalizeTerminal()
-    this.edgeService.getEdgeConfiguration().then ( config => {
-      this.edgeConfiguration = config
-    })
+    this.getNewConfiguration()
     this.initForm()
     this.edgeCMDProgress$ = this.edgeService.getCMDProgress()
     this.subscriptionProgress = this.edgeCMDProgress$.subscribe((st: EdgeCMDProgress) => {
@@ -57,8 +55,8 @@ export class SetupComponent implements OnInit {
   }
   initForm() {
     this.configutationForm = this.formBuilder.group({
-      tenantUrl: [this.edgeConfiguration.tenantUrl],
-      deviceId: [this.edgeConfiguration.deviceId],
+      tenantUrl: [this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''],
+      deviceId: [this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''],
     });
   }
 
@@ -69,27 +67,44 @@ export class SetupComponent implements OnInit {
     this.commandTerminal = "Starting Thin Edge ..."
   }
 
+  stopEdge() {
+    this.command = 'stop'
+    this.initalizeTerminal()
+    this.edgeService.sendCMDToEdge({ cmd: this.command })
+    this.commandTerminal = "Stopping Thin Edge ..."
+  }
+
   configureEdge() {
+    const up = {
+      'device.id': this.configutationForm.value.deviceId,
+      'c8y.url': this.configutationForm.value.tenantUrl,
+    }
+    this.edgeService.updateEdgeConfiguration (up);
+    this.getNewConfiguration()
     this.command = 'configure'
     this.initalizeTerminal()
     this.edgeService.sendCMDToEdge({
       cmd: this.command,
-      deviceId: this.edgeConfiguration.deviceId,
-      tenantUrl: this.edgeConfiguration.tenantUrl.replace('https://','').replace('/', '')
-    })
-    this.edgeService.getEdgeConfiguration().then ( config => {
-      this.edgeConfiguration = config
+      deviceId: this.configutationForm.value.deviceId,
+      tenantUrl: this.configutationForm.value.tenantUrl.replace('https://','').replace('/', '')
     })
     this.commandTerminal = "Configure Thin Edge ..."
+  }
+  getNewConfiguration() {
+    this.edgeService.getEdgeConfiguration().then ( config => {
+      this.edgeConfiguration = config
+      this.configutationForm.setValue ({
+        tenantUrl: [this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''],
+        deviceId: [this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''],
+      })
+    })
   }
 
   resetEdge() {
     this.command = 'reset'
     this.initalizeTerminal()
     this.edgeService.sendCMDToEdge({ cmd: this.command })
-    this.edgeService.getEdgeConfiguration().then ( config => {
-      this.edgeConfiguration = config
-    })
+    this.getNewConfiguration()
     this.commandTerminal = "Resetting Thin Edge ..."
   }
 
@@ -107,6 +122,16 @@ export class SetupComponent implements OnInit {
     }
   }
 
+  onChange (event) {
+    console.log("Change event:", event)
+  }
+  onKeydown (event) {
+    if (event.key === "Enter") {
+      console.log("Execute:",event);
+    } else {
+    console.log("Ignoring:", event)
+    }
+  }
   initalizeTerminal() {
     this.showStatusBar = true
     this.commandTerminal = "# "

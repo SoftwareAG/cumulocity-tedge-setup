@@ -1,12 +1,10 @@
 // spawn
 const { spawn } = require("child_process");
 const events = require('events');
-const ConfigParser = require('configparser');
-const fs = require('fs')
-const CONFIG_FILE = '/etc/tedge/tedge.toml';
 const { TaskQueue } = require("./taskqueue");
 // emmitter to signal completion of current task
 const taskQueue = new TaskQueue()
+const propertiesToJSON = require("properties-to-json");
 
 
 class ThinEdgeBackend {
@@ -60,37 +58,78 @@ class ThinEdgeBackend {
         }
     }
 
-    static getConfiguration() {
-        try {
-            let toml = new ConfigParser()
-            toml.read(CONFIG_FILE)
-            let deviceId
-            try {
-                deviceId = toml['device']['id']
-            } catch (err){
-                deviceId = undefined
-            }
-            let tenantUrl 
-            try {
-                tenantUrl = 'https://' + toml['mqtt']['url']
-            } catch (err){
-                tenantUrl = undefined
-            }
-            
-            return {
-                deviceId: deviceId,
-                tenantUrl: tenantUrl
-            }
+    static getConfiguration(req, res) {
 
+        try {
+            let sent = false;
+            var stdoutChunks = [];
+            const child = spawn('tedge', ['config', 'list']);
+
+            child.stdout.on('data', (data) => {
+                stdoutChunks = stdoutChunks.concat(data);
+            });
+            child.stderr.on('data', (data) => {
+                console.error(`stderr: ${data}`);
+                res.status(500).json(data);
+                sent = true;
+            });
+    
+            child.on('error', function (err) {
+                console.log('Error : ' + err);
+                res.status(500).json(err);
+                sent = true;
+            });
+    
+            child.stdout.on('end', (data) => {
+                console.log('stdout:', Buffer.concat(stdoutChunks).toString());
+                if (!sent) {
+                    let stdoutContent = Buffer.concat(stdoutChunks).toString();
+                    let config = propertiesToJSON (stdoutContent)
+                    res.status(200).json(config);
+                }
+            });
+            console.log('Retrieved configuration')
         } catch (err) {
-            console.error("The following error occured:", err)
-            return {
-                deviceId: undefined,
-                tenantUrl: undefined
-            }
+            console.log("Error when reading configuration: " + err)
+            res.status(500).json({ data: err });
         }
     }
+    static getStatus(req, res) {
+        try {
+            let sent = false;
+            var stdoutChunks = [];
+            const child = spawn('top', ['b', '-n', '1']);
+            //const child = spawn('ls');
 
+            child.stdout.on('data', (data) => {
+                stdoutChunks = stdoutChunks.concat(data);
+            });
+            child.stderr.on('data', (data) => {
+                console.error(`stderr: ${data}`);
+                res.status(500).json(data);
+                sent = true;
+            });
+    
+            child.on('error', function (err) {
+                console.log('Error : ' + err);
+                res.status(500).json(err);
+                sent = true;
+            });
+    
+            child.stdout.on('end', (data) => {
+                console.log('stdout:', Buffer.concat(stdoutChunks).toString());
+                if (!sent) {
+                    let stdoutContent = Buffer.concat(stdoutChunks).toString();
+                    res.status(200).send({result: stdoutContent});
+                }
+            });
+            console.log('Retrieved top status')
+        } catch (err) {
+            console.log("Error when executing top: " + err)
+            res.status(500).json({ data: err });
+        }
+    }
+    
     reset() {
         try {
             console.log('Starting certification creation via subprocess')
@@ -169,7 +208,43 @@ class ThinEdgeBackend {
                 {
                     cmd: 'tedge',
                     args: ["config", "set", "c8y.url", tenantUrl]
-                }]
+                },
+                {
+                    cmd: 'tedge',
+                    args: ['connect', 'c8y', '--test']
+                },
+                {
+                    cmd: 'tedge',
+                    args: ['config', 'set', 'software.plugin.default', 'docker']
+                },
+                {
+                    cmd: 'echo',
+                    args: ['Adding allow anonymus true to config of mosquitto']
+                },
+                {
+                    cmd: 'sh',
+                    args: ['-c', "awk ''!/listener/'' /etc/tedge/mosquitto-conf/tedge-mosquitto.conf > temp"]
+                },
+                {
+                    cmd: 'mv',
+                    args: ['temp', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
+                },
+                {
+                    cmd: 'echo',
+                    args: ['Adding listener 1883 to config of mosquitto']
+                },
+                {
+                    cmd: 'sh',
+                    args: ['-c', "echo ''listener 1883'' >> /etc/tedge/mosquitto-conf/tedge-mosquitto.conf"]
+                },
+                {
+                    cmd: 'sh',
+                    args: ['-c', "awk ''!/pid_file/'' /etc/mosquitto/mosquitto.conf  > temp"]
+                },
+                {
+                    cmd: 'mv',
+                    args: ['temp', '/etc/mosquitto/mosquitto.conf']
+                },]
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, false)
                 taskQueue.registerNotifier(this.notifier)
@@ -186,42 +261,47 @@ class ThinEdgeBackend {
         }
     }
 
+    stop() {
+        try {
+            console.log(`Stopping edge processes ${this.cmdInProgress}...`)
+            const tasks = [
+                {
+                    cmd: 'pkill',
+                    args: ["mosquitto"]
+                },
+                {
+                    cmd: 'pkill',
+                    args: ["tedge_mapper"]
+                },
+                {
+                    cmd: 'pkill',
+                    args: ["tedge_agent"]
+                },
+                {
+                    cmd: 'pkill',
+                    args: ["collectd"]
+                },
+            ]
+            if (!this.cmdInProgress) {
+                taskQueue.queueTasks(tasks, true)
+                taskQueue.registerNotifier(this.notifier)
+                taskQueue.start()
+            } else {
+                this.socket.emit('cmd-progress', {
+                    status: 'ignore',
+                    progress: 0,
+                    total: 0
+                });
+            }
+        } catch (err) {
+            console.error(`The following error occured: ${err.message}`)
+        } 
+    }
+
     start() {
         try {
             console.log(`Starting edge ${this.cmdInProgress}...`)
             const tasks = [
-                {
-                    cmd: 'tedge',
-                    args: ['connect', 'c8y']
-                },
-                {
-                    cmd: 'echo',
-                    args: ['Adding allow anonymus true to config of mosquitto']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "awk ''!/listener/'' /etc/tedge/mosquitto-conf/tedge-mosquitto.conf > temp"]
-                },
-                {
-                    cmd: 'mv',
-                    args: ['temp', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
-                },
-                {
-                    cmd: 'echo',
-                    args: ['Adding listenener 1883 to config of mosquitto']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "echo ''listener 1883'' >> /etc/tedge/mosquitto-conf/tedge-mosquitto.conf"]
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "awk ''!/pid_file/'' /etc/mosquitto/mosquitto.conf  > temp"]
-                },
-                {
-                    cmd: 'mv',
-                    args: ['temp', '/etc/mosquitto/mosquitto.conf']
-                },
                 {
                     cmd: 'mosquitto',
                     args: ['-c', '/etc/mosquitto/mosquitto.conf', '-v', '-d'],
@@ -245,10 +325,6 @@ class ThinEdgeBackend {
                     args: ['-c', 'collectd &']
                 },
                 {
-                    cmd: 'tedge',
-                    args: ['config', 'set', 'software.plugin.default', 'docker']
-                },
-                {
                     cmd: 'sh',
                     args: ['-c', 'tedge_mapper sm-c8y &']
                 }
@@ -258,33 +334,6 @@ class ThinEdgeBackend {
                     args: ['-c', 'tedge_agent &']
                 },
             ]
-
-            /*             const tasks = [
-                            {
-                                cmd: 'ls',
-                                args: ['-la']
-                            },
-                            {
-                                cmd: 'ls',
-                                args: ['-la']
-                            },
-                            {
-                                cmd: 'ls',
-                                args: ['-ltr']
-                            },
-                            {
-                                cmd: 'echo',
-                                args: ['Task 3']
-                            },
-                            {
-                                cmd: 'sleepy',
-                                args: ['5s']
-                            },
-                            {
-                                cmd: 'sleep',
-                                args: ['10s']
-                            },
-                        ]; */
 
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, false)

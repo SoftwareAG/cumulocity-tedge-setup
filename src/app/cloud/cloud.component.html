@@ -8,8 +8,8 @@
             <c8y-form-group class="col-lg-8">
               <label translate>Tenant URL</label>
               <input class="form-control" type="text" formControlName="tenantUrl"
-                placeholder="https://your-tenant.cumulocity.com" #tenantUrlRef required
-                [readonly]="edgeConfiguration?.deviceId && edgeConfiguration?.tenantUrl" />
+                placeholder="your-tenant.cumulocity.com" #tenantUrlRef required
+                [readonly]="edgeConfiguration['device.id'] && edgeConfiguration['c8y.url']" />
             </c8y-form-group>
           </div>
           <div class="row">
@@ -31,22 +31,12 @@
     <div class="card">
       <table>
         <tbody *ngIf="cloudDeviceDetails">
-          <tr *ngFor="let attribute of  Object.keys(cloudDeviceDetails); index as i">
-            <td scope="row">{{attribute | titlecase}}:</td>
-            <td scope="row">{{cloudDeviceDetails[attribute]}}</td>
+          <tr *ngFor="let item of (cloudDeviceDetails | keyvalue); index as i">
+            <td scope="row" style="width: 20%"><span class="ng-binding">{{ item.key | titlecase}}:</span></td>
+            <td scope="row" style="width: 80%"><span class="ng-binding">{{item.value}}</span></td>
           </tr>
         </tbody>
       </table>
-    </div>
-  </div>
-</div>
-
-
-<div class="card">
-  <div class="card-block">
-    <div class="form-group">
-      <input class="form-control" placeholder="your deviceId" #deviceIdRef required />
-      <button type="button" (click)="createMeasurement(deviceIdRef.value)">Create Test Measurement</button>
     </div>
   </div>
 </div>

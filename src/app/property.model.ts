@@ -6,36 +6,27 @@ export class CustomCertificate {
   path: string;
 }
 
-export class ThinEdgeConfiguration {
+/* export class ThinEdgeConfiguration {
 
   tenantUrl?: string
   deviceId?: string
+  username?:string
+  password?:string
+  device.id=4712
+  device.key.path=/etc/tedge/device-certs/tedge-private-key.pem
+  device.cert.path=/etc/tedge/device-certs/tedge-certificate.pem
+  c8y.url=ck2.eu-latest.cumulocity.com
+  c8y.root.cert.path=/etc/ssl/certs
+  az.root.cert.path=/etc/ssl/certs
+  az.mapper.timestamp?: boolean
+  mqtt.port?: number
+  software.plugin.defaul?: string
+} */
 
-/*   public constructor(
-    fields?: {
-      username?:string
-      password?:string
-      tenantUrl?: string
-      deviceId?: string
-    }) {
-    if (fields) Object.assign(this, fields);
-  }
-
-  isConfigured():boolean {
-    let result = false;
-    if (this.tenantUrl && this.deviceId ) {
-        result = true
-    } else {
-       result = false
-    }
-    return result
-  } */
-}
-
-export class CloudConfiguration{
+/* export class CloudConfiguration{
     username?:string
     password?:string
-}
+} */
 
 export class EdgeCMDProgress {
   status: string

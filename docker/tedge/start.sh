@@ -1,2 +1,2 @@
 #!/bin/sh
-node server.js & >> ./Logs/registration.log
+node server/server.js & >> ./Logs/registration.log

@@ -55,20 +55,23 @@ server.listen(process.env.PORT || 9080, function () {
 app.get("/api/certificate", function (req, res) {
     let deviceId = req.query.deviceId;
     console.log(`Download certificate for : ${deviceId}`);
-    res.setHeader('Content-Disposition', 'attachment; filename=' + deviceId + '.pem');
     res.status(200).sendFile("/etc/tedge/device-certs/tedge-certificate.pem");
 });
 
 
 /*  "/api/configuration"
- *   GET: configuration 
- */
+*   GET: configuration 
+*/
 app.get("/api/configuration", function (req, res) {
-    let cfg = thinEdgeBackend.ThinEdgeBackend.getConfiguration()
-    console.log(`Loading configuration`, cfg);
-    res.status(200).json(cfg)
+    thinEdgeBackend.ThinEdgeBackend.getConfiguration(req,res)
 });
 
+/*  "/api/status"
+*   GET: status 
+*/
+app.get("/api/status", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getStatus(req,res)
+});
 
 /*  "/config"
  *   POST: Change proxy to communicate with cloud instance. This is required to avoid CORS errors
@@ -92,6 +95,8 @@ io.on('connection', function (socket) {
         console.log(`New cmd: ${message}`, message.cmd);
         if (message.cmd == 'start')  {
             backend.start();
+        } else if (message.cmd == 'stop')  {
+            backend.stop( message);
         } else if (message.cmd == 'configure')  {
             backend.configure( message);
         } else if (message.cmd == 'reset')  {
