@@ -19,9 +19,9 @@ RUN cp /etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
 
 # build angular app
 COPY ./ /app/tedge
+WORKDIR /app/tedge
 RUN npm install -g @angular/cli
 RUN npm install
-WORKDIR /app/tedge
 RUN ng build --output-path=/app/tedge/dist
 RUN mkdir Logs
 
