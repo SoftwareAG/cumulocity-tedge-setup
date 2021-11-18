@@ -12,14 +12,19 @@ RUN apt install -y nano
 RUN apt install -y docker.io
 RUN apt install -y nodejs npm
 
-COPY ./ /app/build
+# install edge
 COPY ./tedge/plugins /etc/tedge/sm-plugins
-COPY ./server /app
 RUN curl -fsSL https://raw.githubusercontent.com/thin-edge/thin-edge.io/main/get-thin-edge_io.sh | sudo sh -s 0.4.0
 RUN cp /etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
+
+# build angular app
+COPY ./ /app/tedge
 RUN npm install -g @angular/cli
-WORKDIR /app/build
-RUN ng build 
+RUN npm install
+WORKDIR /app/tedge
+RUN ng build --output-path=/app/tedge/dist
+RUN mkdir Logs
 
 #CMD ["./start.sh"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["tail"]
+CMD ["-f","/dev/null"]
