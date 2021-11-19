@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { EdgeService } from '../edge.service';
-import { Terminal } from "xterm";
+//import { Terminal } from "xterm";
 
 @Component({
   selector: 'app-configuration',
@@ -9,7 +9,7 @@ import { Terminal } from "xterm";
   encapsulation: ViewEncapsulation.None,
 })
 export class StatusComponent implements OnInit {
-  public term: Terminal;
+//  public term: Terminal;
   container: HTMLElement;
   status: string;
   configuration: string
