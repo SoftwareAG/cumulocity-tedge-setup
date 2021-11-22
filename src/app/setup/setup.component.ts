@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '@c8y/ngx-components';
 import { Observable, Subscription } from 'rxjs';
 import { EdgeService } from '../edge.service';
@@ -44,7 +44,7 @@ export class SetupComponent implements OnInit {
         this.commandTerminal = this.commandTerminal + "\r\n" + "# "
         this.showStatusBar = false
       } else if (st.cmd) {
-        this.commandTerminal = this.commandTerminal + "\r\n" + "# " + st.cmd
+        this.commandTerminal = this.commandTerminal + "\r\n" + "# " + st.cmd + "\r\n"
       }
       this.progress = 100 * (st.progress + 1) / st.total
     })
@@ -55,8 +55,8 @@ export class SetupComponent implements OnInit {
   }
   initForm() {
     this.configutationForm = this.formBuilder.group({
-      tenantUrl: [this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''],
-      deviceId: [this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''],
+      tenantUrl: [(this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''), Validators.required],
+      deviceId: [(this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''), Validators.required],
     });
   }
 
@@ -83,10 +83,11 @@ export class SetupComponent implements OnInit {
     this.getNewConfiguration()
     this.command = 'configure'
     this.initalizeTerminal()
+    let url =  this.configutationForm.controls['tenantUrl'].value.replace('https://','').replace('/', '')
     this.edgeService.sendCMDToEdge({
       cmd: this.command,
       deviceId: this.configutationForm.value.deviceId,
-      tenantUrl: this.configutationForm.value.tenantUrl.replace('https://','').replace('/', '')
+      tenantUrl: url
     })
     this.commandTerminal = "Configure Thin Edge ..."
   }
@@ -94,8 +95,8 @@ export class SetupComponent implements OnInit {
     this.edgeService.getEdgeConfiguration().then ( config => {
       this.edgeConfiguration = config
       this.configutationForm.setValue ({
-        tenantUrl: [this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''],
-        deviceId: [this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''],
+        tenantUrl: this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: '',
+        deviceId: this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: '',
       })
     })
   }

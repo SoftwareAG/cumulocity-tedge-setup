@@ -4,7 +4,7 @@
             <c8y-form-group class="col-lg-4">
                 <label translate>Tenant URL</label>
                 <input class="form-control" type="text" formControlName="tenantUrl"
-                    placeholder="https://your-tenant.cumulocity.com" #tenantUrlRef required [readonly]="edgeConfiguration['device.id'] && edgeConfiguration['c8y.url']"/>
+                    placeholder="your-tenant.cumulocity.com" #tenantUrlRef required [readonly]="edgeConfiguration['device.id'] && edgeConfiguration['c8y.url']"/>
                 <label title="Device ID">External Device Id</label>
                 <input class="form-control" type="text" formControlName="deviceId" placeholder="external Device Id"  [readonly]="edgeConfiguration['device.id'] && edgeConfiguration['c8y.url']"
                     #externalDeviceIdRef required />
