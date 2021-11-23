@@ -98,8 +98,8 @@ class ThinEdgeBackend {
         try {
             let sent = false;
             var stdoutChunks = [];
-            const child = spawn('top', ['b', '-n', '1']);
-            //const child = spawn('ls');
+            const child = spawn('top', ['-b', '-n', '1']);
+            //const child = spawn('jobs');
 
             child.stdout.on('data', (data) => {
                 stdoutChunks = stdoutChunks.concat(data);
@@ -123,7 +123,7 @@ class ThinEdgeBackend {
                     res.status(200).send({result: stdoutContent});
                 }
             });
-            console.log('Retrieved top status')
+            console.log('Retrieved job status')
         } catch (err) {
             console.log("Error when executing top: " + err)
             res.status(500).json({ data: err });
@@ -211,7 +211,8 @@ class ThinEdgeBackend {
                 },
                 {
                     cmd: 'tedge',
-                    args: ['connect', 'c8y', '--test']
+                    args: ['connect', 'c8y', '--test'],
+                    continueOnError: true
                 },
                 {
                     cmd: 'tedge',
