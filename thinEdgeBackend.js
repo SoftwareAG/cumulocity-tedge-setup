@@ -219,10 +219,11 @@ class ThinEdgeBackend {
                     args: ['tedge', 'connect', 'c8y'],
                     continueOnError: true
                 },
-                {
-                    cmd: 'tedge',
-                    args: ['config', 'set', 'software.plugin.default', 'docker']
-                },]
+                // {
+                //     cmd: 'tedge',
+                //     args: ['config', 'set', 'software.plugin.default', 'docker']
+                // },
+            ]
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, false)
                 taskQueue.registerNotifier(this.notifier)
@@ -293,10 +294,6 @@ class ThinEdgeBackend {
                     args: ['temp', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
                 },
                 {
-                    cmd: 'echo',
-                    args: ['Adding listener 1883 to config of mosquitto']
-                },
-                {
                     cmd: 'sh',
                     args: ['-c', "echo ''listener 1883'' >> /etc/tedge/mosquitto-conf/tedge-mosquitto.conf"]
                 },
@@ -307,7 +304,7 @@ class ThinEdgeBackend {
                 {
                     cmd: 'mv',
                     args: ['temp', '/etc/mosquitto/mosquitto.conf']
-                }
+                },
                 {
                     cmd: 'mosquitto',
                     args: ['-c', '/etc/mosquitto/mosquitto.conf', '-v', '-d'],
@@ -320,7 +317,7 @@ class ThinEdgeBackend {
                 // },
                 {
                     cmd: 'sudo',
-                    args: ['tedge', 'connect', 'c8y'],
+                    args: ['tedge', 'connect', 'c8y', '--test'],
                     continueOnError: true
                 },
                 {
