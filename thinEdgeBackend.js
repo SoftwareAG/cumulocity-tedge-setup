@@ -209,42 +209,19 @@ class ThinEdgeBackend {
                     cmd: 'tedge',
                     args: ["config", "set", "c8y.url", tenantUrl]
                 },
+                // {
+                //     cmd: 'tedge',
+                //     args: ['connect', 'c8y', '--test'],
+                //     continueOnError: true
+                // },
                 {
-                    cmd: 'tedge',
-                    args: ['connect', 'c8y', '--test'],
+                    cmd: 'sudo',
+                    args: ['tedge', 'connect', 'c8y'],
                     continueOnError: true
                 },
                 {
                     cmd: 'tedge',
                     args: ['config', 'set', 'software.plugin.default', 'docker']
-                },
-                {
-                    cmd: 'echo',
-                    args: ['Adding allow anonymus true to config of mosquitto']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "awk ''!/listener/'' /etc/tedge/mosquitto-conf/tedge-mosquitto.conf > temp"]
-                },
-                {
-                    cmd: 'mv',
-                    args: ['temp', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
-                },
-                {
-                    cmd: 'echo',
-                    args: ['Adding listener 1883 to config of mosquitto']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "echo ''listener 1883'' >> /etc/tedge/mosquitto-conf/tedge-mosquitto.conf"]
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "awk ''!/pid_file/'' /etc/mosquitto/mosquitto.conf  > temp"]
-                },
-                {
-                    cmd: 'mv',
-                    args: ['temp', '/etc/mosquitto/mosquitto.conf']
                 },]
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, false)
@@ -304,13 +281,46 @@ class ThinEdgeBackend {
             console.log(`Starting edge ${this.cmdInProgress}...`)
             const tasks = [
                 {
+                    cmd: 'echo',
+                    args: ['Adding allow anonymus true to config of mosquitto']
+                },
+                {
+                    cmd: 'sh',
+                    args: ['-c', "awk ''!/listener/'' /etc/tedge/mosquitto-conf/tedge-mosquitto.conf > temp"]
+                },
+                {
+                    cmd: 'mv',
+                    args: ['temp', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
+                },
+                {
+                    cmd: 'echo',
+                    args: ['Adding listener 1883 to config of mosquitto']
+                },
+                {
+                    cmd: 'sh',
+                    args: ['-c', "echo ''listener 1883'' >> /etc/tedge/mosquitto-conf/tedge-mosquitto.conf"]
+                },
+                {
+                    cmd: 'sh',
+                    args: ['-c', "awk ''!/pid_file/'' /etc/mosquitto/mosquitto.conf  > temp"]
+                },
+                {
+                    cmd: 'mv',
+                    args: ['temp', '/etc/mosquitto/mosquitto.conf']
+                }
+                {
                     cmd: 'mosquitto',
                     args: ['-c', '/etc/mosquitto/mosquitto.conf', '-v', '-d'],
                     continueOnError: true
                 },
+                // {
+                //     cmd: 'tedge',
+                //     args: ['connect', 'c8y', '--test'],
+                //     continueOnError: true
+                // },
                 {
-                    cmd: 'tedge',
-                    args: ['connect', 'c8y', '--test'],
+                    cmd: 'sudo',
+                    args: ['tedge', 'connect', 'c8y'],
                     continueOnError: true
                 },
                 {
