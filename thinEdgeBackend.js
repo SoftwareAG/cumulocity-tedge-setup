@@ -98,8 +98,9 @@ class ThinEdgeBackend {
         try {
             let sent = false;
             var stdoutChunks = [];
-            const child = spawn('top', ['-b', '-n', '1']);
-            //const child = spawn('jobs');
+            //const child = spawn('top', ['-b', '-n', '1']);
+            //const child = spawn('sh', ['-c', 'ps o state=,pid=,command=,time=|sed -E -n "/ sed -E -n/d;/^[^ZT] +[0-9]+ .*$@/p";']);
+            const child = spawn('ps')
 
             child.stdout.on('data', (data) => {
                 stdoutChunks = stdoutChunks.concat(data);
@@ -120,6 +121,7 @@ class ThinEdgeBackend {
                 console.log('stdout:', Buffer.concat(stdoutChunks).toString());
                 if (!sent) {
                     let stdoutContent = Buffer.concat(stdoutChunks).toString();
+                    stdoutContent = stdoutContent.replace( /.*defunct.*\n/g, '')
                     res.status(200).send({result: stdoutContent});
                 }
             });
