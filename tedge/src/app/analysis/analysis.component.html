@@ -1,11 +1,14 @@
-<!-- 
-<img src="../assets/Analysis.png"/> -->
+<c8y-title>
+  {{ 'Analytics'| translate }}
+</c8y-title>
 <div class="card-group">
     <div class="col-sm-12">
       <div class="card">
-        <div class="card-header">Analytics</div>
+        <div class="card-header">{{ config.diagramName}} (spanning {{config.rangeUnitCount}} * {{rangeUnits[config.rangeUnit].text}})</div>
         <div class="card-block my-card-body">
-            <cumulocity-datapoints-charting-widget></cumulocity-datapoints-charting-widget>
+            <cumulocity-datapoints-charting-widget
+            [config]="config">
+          </cumulocity-datapoints-charting-widget>
         </div>
       </div>
     </div>
@@ -15,8 +18,8 @@
     <button
       class="btn btn-link"
       title="{{ 'Configure diagram' | translate }}"
-      (click) = "toogleDialog()">
-      <i class="fa-cog"></i>&nbsp;<span translate>Configure diagram</span>
+      (click) = "showDialog = !showDialog">
+      <i class="fa fa-cog"></i>&nbsp;<span translate>Configure diagram</span>
     </button>
 </c8y-action-bar-item>
 
@@ -26,8 +29,8 @@
   <div class="bottom-drawer">
     <cumulocity-datapoints-charting-config (onChangeConfig)="configurationChanged($event)"
       *ngIf="showDialog"
-      (onClose)="onCloseDialog()"
       class="d-contents"
+      [config]="config"
     >
     </cumulocity-datapoints-charting-config>
   </div>

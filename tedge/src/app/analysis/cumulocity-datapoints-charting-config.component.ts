@@ -1,5 +1,7 @@
 
-import { Component, OnInit, EventEmitter, Output} from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input} from '@angular/core';
+import { RawListItem } from '../property.model';
+import { rangeUnits } from './widget-helper';
 
 @Component({
   selector: 'cumulocity-datapoints-charting-config',
@@ -10,11 +12,18 @@ export class CumulocityDatapointsChartingConfigComponent implements OnInit {
 
   constructor() { }
   @Output() onChangeConfig = new EventEmitter<any>();
+  @Input() config;
+
+  rangeUnits: RawListItem[] = rangeUnits
+
   ngOnInit() {
   }
 
   public onChangeClicked(): void {
+    this.onChangeConfig.emit(this.config);
+  }
 
-    this.onChangeConfig.emit({config: "changed"});
+  public updateConfig(): void {
+    console.log("Update configuration", this.config)
   }
 }

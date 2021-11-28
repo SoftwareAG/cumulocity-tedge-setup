@@ -1,7 +1,7 @@
 version: "3.0"
 services:
   tedge:
-   build: ./
+   build: ./tedge
    hostname: tedge
    container_name: thin-edge-setup.io
    expose:
@@ -13,7 +13,7 @@ services:
    volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/app/
-#      - ./tedge/etc/tedge:/etc/tedge
+      - ./tedge/etc/tedge:/etc/tedge
 
   # tedge:
   #  image: eclipse-mosquitto

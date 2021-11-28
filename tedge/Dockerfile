@@ -15,7 +15,9 @@ RUN apt-get install --yes docker.io nodejs npm
 # install edge
 # COPY ./tedge/plugins /etc/tedge/sm-plugins
 # alternative 1
-RUN curl -fsSL https://raw.githubusercontent.com/thin-edge/thin-edge.io/main/get-thin-edge_io.sh | sudo sh -s 0.4.0
+# apama plugn dddoesn't exist, revert to previous version
+# RUN curl -fsSL https://raw.githubusercontent.com/thin-edge/thin-edge.io/main/get-thin-edge_io.sh | sudo sh -s 0.4.0
+RUN curl -fsSL https://raw.githubusercontent.com/thin-edge/thin-edge.io/dcc0f9b151a3f104fe29cab0ed787c599b7a093a/get-thin-edge_io.sh | sudo sh -s 0.4.0
 RUN cp /etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
 
 # build angular app

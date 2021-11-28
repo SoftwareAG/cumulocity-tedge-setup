@@ -62,8 +62,8 @@ app.get("/api/certificate", function (req, res) {
 /*  "/api/configuration"
 *   GET: configuration 
 */
-app.get("/api/configuration", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getConfiguration(req,res)
+app.get("/api/edgeConfiguration", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getEdgeConfiguration(req,res)
 });
 
 /*  "/api/status"
@@ -85,6 +85,19 @@ app.post("/config", function (req, res) {
     res.status(200).json({ result: "OK" });
 });
 
+/*  "/analyticsConfiguration"
+ *   POST: Change analytics widget configuration 
+ */
+app.post("/api/analyticsConfiguration", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.setAnalyticsConfiguration(req,res)
+});
+
+/*  "/analyticsConfiguration"
+ *   GET: Get analytics widget configuration 
+ */
+app.get("/api/analyticsConfiguration", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getAnalyticsConfiguration(req,res)
+});
 
 io.on('connection', function (socket) {
     console.log(`New connection: ${socket.id}`);

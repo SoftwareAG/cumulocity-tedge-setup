@@ -8,7 +8,8 @@ import { map } from "rxjs/operators"
 
 const C8Y_URL = 'c8y';
 const LOGIN_URL = `/tenant/currentTenant`
-const CONFIGURATION_URL = '/api/configuration'
+const EDGE_CONFIGURATION_URL = '/api/edgeConfiguration'
+const ANALYTICS_CONFIGURATION_URL = '/api/analyticsConfiguration'
 const PROXY_CONFIG_URL = '/config';
 const DOWNLOADCERTIFICATE_URL = "/api/certificate";
 const STATUS_URL = "/api/status";
@@ -81,11 +82,30 @@ export class EdgeService {
   }
   getEdgeConfiguration(): Promise<any> {
     return this.http
-      .get<any>(CONFIGURATION_URL)
+      .get<any>(EDGE_CONFIGURATION_URL)
       .toPromise()
       .then(config => {
         Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
         return this.edgeConfiguration
+      })
+  }
+
+  getAnalyticsConfiguration(): Promise<any> {
+    return this.http
+      .get<any>(ANALYTICS_CONFIGURATION_URL)
+      .toPromise()
+      .then(config => {
+        return config
+      })
+  }
+
+  setAnalyticsConfiguration(config): Promise<any> {
+    console.log("Configuration to be stored:", config)
+    return this.http
+      .post<any>(ANALYTICS_CONFIGURATION_URL, config)
+      .toPromise()
+      .then(config => {
+        return config
       })
   }
 

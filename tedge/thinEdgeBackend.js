@@ -2,24 +2,15 @@
 const { spawn } = require("child_process");
 const events = require('events');
 const { TaskQueue } = require("./taskqueue");
+const fs = require('fs');
 // emmitter to signal completion of current task
 const taskQueue = new TaskQueue()
 const propertiesToJSON = require("properties-to-json");
-//const  mongoose = require('mongoose')
-//const mongoIo = require('socket.io')(3100)
-// const MeasurementSchema = mongoose.Schema({
-//     _id: String,
-//     topic: String,
-//     payload: String,
-//     type: String,
-//     datetime: Date
-// })
-//const Measurement = mongoose.model('Measurement', MeasurementSchema)
 const MongoClient = require('mongodb').MongoClient;
 const MONGO_URL = "mongodb://mongodb1:27017";
 const MONGO_COLLECTION = "tedge"
 const MONGO_DB = "localDB"
-
+const ANALYTICS_CONFIG ='/etc/tedge/analyticsConfig.json'
 
 class ThinEdgeBackend {
 
@@ -103,8 +94,7 @@ class ThinEdgeBackend {
           });
     }
 
-    static getConfiguration(req, res) {
-
+    static getEdgeConfiguration(req, res) {
         try {
             let sent = false;
             var stdoutChunks = [];
@@ -139,6 +129,7 @@ class ThinEdgeBackend {
             res.status(500).json({ data: err });
         }
     }
+
     static getStatus(req, res) {
         try {
             let sent = false;
@@ -174,6 +165,50 @@ class ThinEdgeBackend {
         } catch (err) {
             console.log("Error when executing top: " + err)
             res.status(500).json({ data: err });
+        }
+    }
+
+    static async getAnalyticsConfiguration(req, res) {
+        let configuration 
+        try {
+            let ex = await ThinEdgeBackend.fileExists(ANALYTICS_CONFIG)
+            if ( !ex) {
+                await fs.promises.writeFile(ANALYTICS_CONFIG, "{}");
+            }
+            let rawdata = await fs.promises.readFile(ANALYTICS_CONFIG);
+            let str = rawdata.toString()
+            configuration = JSON.parse(str);
+            res.status(200).json(configuration);
+            console.log('Retrieved configuration', configuration)
+        } catch (err) {
+            console.log("Error when reading configuration: " + err)
+            res.status(500).json({ data: err });
+        }
+    }
+
+    static async setAnalyticsConfiguration(req, res) {
+        let configuration = req.body
+        try {
+            await fs.promises.writeFile(ANALYTICS_CONFIG, JSON.stringify(configuration))
+            res.status(200).json(configuration);
+            console.log('Saved configuration', configuration)
+        } catch (err) {
+            console.log("Error when saving configuration: " + err)
+            res.status(500).json({ data: err });
+        }
+    }
+
+    static async fileExists(filename) {
+        try {
+            await fs.promises.stat(filename);
+            return true;
+        } catch (err) {
+            //console.log("Testing code: " + err.code)
+            if (err.code === 'ENOENT') {
+                return false;
+            } else {
+                throw err;
+            }
         }
     }
     

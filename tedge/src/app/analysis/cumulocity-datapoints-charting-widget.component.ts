@@ -28,7 +28,6 @@ import * as _ from "lodash";
 import * as moment from "moment";
 import { Observable, Subscription, timer } from 'rxjs';
 import { MongoMeasurment } from '../property.model';
-import { timeStamp } from 'console';
 import { generateNextColor, rangeUnits } from './widget-helper';
 
 @Component({
@@ -60,8 +59,8 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
     chartLabels: Label[] = []
     chartDataPointList: { [name: string]: number } = { index: 0 };
   
-    rangeUnitFactor: number =  rangeUnits[1].id;
-    rangeUnitCount = 30; // 5 minutes
+    //rangeUnit: number =  1;
+    //rangeUnitCount = 30; // 5 minutes
   
     chartOptions: ChartOptions = {
       // animation: {
@@ -127,6 +126,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
 
      ngOnInit() {
    
+      console.log("Widget config:", this.config)
         // send empty data to advance graph
         timer(0,1000).pipe().subscribe(y => {
           const ts = Date.now();
@@ -243,7 +243,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
       private getDateRange(): { from: Date; to: Date; } {
         let to = Date.now();
     
-        let from = new Date(to - this.rangeUnitFactor * this.rangeUnitCount * 1000);
+        let from = new Date(to - rangeUnits[this.config.rangeUnit].id    * this.config.rangeUnitCount * 1000);
         return { from, to: new Date(to) };
       }
  
