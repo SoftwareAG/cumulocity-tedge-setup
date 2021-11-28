@@ -13,7 +13,7 @@ import { EdgeCMDProgress } from '../property.model';
 })
 export class SetupComponent implements OnInit {
   refresh: EventEmitter<any> = new EventEmitter();
-  public showACreateCertificate: boolean = false;
+  public showCreateCertificate: boolean = false;
   edgeCMDProgress$: Observable<EdgeCMDProgress>;
   edgeCMDResult$: Observable<string>;
   subscriptionProgress; subscriptionResult: Subscription

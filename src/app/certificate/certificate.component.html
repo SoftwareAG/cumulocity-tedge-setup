@@ -6,16 +6,16 @@
   <button
     class="btn btn-link"
     title="{{ 'Create certificate' | translate }}"
-    (click)="showACreateCertificate = !showACreateCertificate"
+    (click)="showCreateCertificate = !showCreateCertificate"
   >
     <i class="fa fa-plus-circle"></i>&nbsp;<span translate>Create certificate</span>
   </button>
 </c8y-action-bar-item>
 
-<div [ngClass]="{ drawerOpen: showACreateCertificate }">
+<div [ngClass]="{ drawerOpen: showCreateCertificate }">
   <div class="bottom-drawer">
     <c8y-manage-certificate
-      *ngIf="showACreateCertificate"
+      *ngIf="showCreateCertificate"
       (onClose)="onCloseCertificateDialog()"
       [refresh]="refresh"
       class="d-contents"

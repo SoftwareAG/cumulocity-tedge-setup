@@ -28,9 +28,43 @@ export class CustomCertificate {
     password?:string
 } */
 
-export class EdgeCMDProgress {
+export interface EdgeCMDProgress {
   status: string
   progress: number
   total: number
   cmd: string
+}
+
+
+export interface MongoMeasurment {
+  _id?: string
+  topic?: string
+  payload?: Object
+  type?: string
+  qos?: number
+  datetime?: Date
+  timestamp?: number
+
+
+  // constructor( _id: string,
+  //   topic: string,
+  //   payload: Object,
+  //   type: string,
+  //   qos: number) {
+
+  //     this._id = _id
+  //     this.topic = topic
+  //     this.payload = payload
+  //     this.type = type
+  //     this.qos = qos
+  // }
+}
+
+
+export interface RawListItem {
+  id: any;
+  text: any;
+  format?: string;
+  isGroup?: boolean;
+  groupname?: string;
 }

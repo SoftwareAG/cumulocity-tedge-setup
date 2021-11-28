@@ -17,6 +17,9 @@ import { EdgeNavigationFactory } from './navigation.factory';
 import { SetupComponent } from './setup/setup.component';
 import { EdgeService } from './edge.service';
 import { StatusComponent } from './status/status.component';
+import { CumulocityDatapointsChartingWidget } from './analysis/cumulocity-datapoints-charting-widget.component';
+import { ChartsModule } from 'ng2-charts';
+import { CumulocityDatapointsChartingConfigComponent } from './analysis/cumulocity-datapoints-charting-config.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
 
@@ -37,6 +40,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     ReactiveFormsModule,
     DynamicFormsModule,
     SocketIoModule.forRoot(config),
+    ChartsModule,
     CommonModule
   ],
   
@@ -50,7 +54,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     },
   ],
   bootstrap: [BootstrapComponent],
-  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent]
+  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, CumulocityDatapointsChartingWidget, CumulocityDatapointsChartingConfigComponent]
 })
 export class AppModule { }
 

@@ -5,6 +5,20 @@ const { TaskQueue } = require("./taskqueue");
 // emmitter to signal completion of current task
 const taskQueue = new TaskQueue()
 const propertiesToJSON = require("properties-to-json");
+//const  mongoose = require('mongoose')
+//const mongoIo = require('socket.io')(3100)
+// const MeasurementSchema = mongoose.Schema({
+//     _id: String,
+//     topic: String,
+//     payload: String,
+//     type: String,
+//     datetime: Date
+// })
+//const Measurement = mongoose.model('Measurement', MeasurementSchema)
+const MongoClient = require('mongodb').MongoClient;
+const MONGO_URL = "mongodb://mongodb1:27017";
+const MONGO_COLLECTION = "tedge"
+const MONGO_DB = "localDB"
 
 
 class ThinEdgeBackend {
@@ -13,10 +27,12 @@ class ThinEdgeBackend {
     constructor(socket) {
         this.socket = socket;
 
-        // bin this to all methods of notifier
+        // bind this to all methods of notifier
         Object.keys(this.notifier).forEach(key => {
             this.notifier[key] = this.notifier[key].bind(this)
         });
+        //console.log(`Socket: ${socket.id}`)
+        this.connect2Mongo();
     }
 
     notifier = {
@@ -56,6 +72,35 @@ class ThinEdgeBackend {
                 total: task.length
             });
         }
+    }
+
+
+    connect2Mongo() {
+        let localSocket = this.socket;
+        MongoClient.connect(MONGO_URL, function(err, db) {
+            if (err) throw err;
+            let dbo = db.db(MONGO_DB);
+            let collection = dbo.collection(MONGO_COLLECTION)          
+            let changeStream = null;
+
+            localSocket.on('new-measurement', function (message) {
+                console.log(`New measurement cmd: ${message}`);
+                if (message == 'start')  {
+                    changeStream = collection.watch()
+                    changeStream.on("change",function(change){
+                        // console.log("changed", JSON.stringify(change.fullDocument));
+                        // let obj = JSON.parse(change.fullDocument.payload)
+                        // change.fullDocument.payload = obj
+                        // console.log("changed", JSON.stringify(change.fullDocument));
+                        localSocket.emit('new-measurement', JSON.stringify(change.fullDocument))
+                    });
+                } else if (message == 'stop')  {
+                    if ( changeStream) {
+                    changeStream.close()
+                    }
+                } 
+            });
+          });
     }
 
     static getConfiguration(req, res) {

@@ -1,5 +1,34 @@
-<div class="form-group">
-    <span>Still to come ...</span>
+<!-- 
+<img src="../assets/Analysis.png"/> -->
+<div class="card-group">
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="card-header">Analytics</div>
+        <div class="card-block my-card-body">
+            <cumulocity-datapoints-charting-widget></cumulocity-datapoints-charting-widget>
+        </div>
+      </div>
+    </div>
 </div>
 
-<img src="../assets/Analysis.png"/>
+<c8y-action-bar-item [placement]="'right'">
+    <button
+      class="btn btn-link"
+      title="{{ 'Configure diagram' | translate }}"
+      (click) = "toogleDialog()">
+      <i class="fa-cog"></i>&nbsp;<span translate>Configure diagram</span>
+    </button>
+</c8y-action-bar-item>
+
+
+
+<div [ngClass]="{ drawerOpen: showDialog }">
+  <div class="bottom-drawer">
+    <cumulocity-datapoints-charting-config (onChangeConfig)="configurationChanged($event)"
+      *ngIf="showDialog"
+      (onClose)="onCloseDialog()"
+      class="d-contents"
+    >
+    </cumulocity-datapoints-charting-config>
+  </div>
+</div>

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { IExternalIdentity, Client, BasicAuth, FetchClient, IFetchOptions, IFetchResponse, IdentityService, InventoryService } from '@c8y/client';
-import { EdgeCMDProgress } from './property.model';
+import { IManagedObject, IResultList, IResult, IExternalIdentity, Client, BasicAuth, FetchClient, IFetchOptions, IFetchResponse, IdentityService, InventoryService, IdReference } from '@c8y/client';
+import { EdgeCMDProgress, MongoMeasurment } from './property.model';
 import { Socket } from 'ngx-socket-io';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { map } from "rxjs/operators"
 
 const C8Y_URL = 'c8y';
 const LOGIN_URL = `/tenant/currentTenant`
@@ -16,38 +17,51 @@ const STATUS_URL = "/api/status";
   providedIn: 'root'
 })
 export class EdgeService {
-  
+
+
+
   private fetchClient: FetchClient;
 
   private edgeConfiguration: any = {}
   private inventoryService: InventoryService;
   private identityService: IdentityService;
-  
+
   constructor(private http: HttpClient,
     private socket: Socket) {
-      //Object.assign(this.edgeConfiguration, CONFIG_CLOUD)
-    }
-    
-    /*   async loadConfiguration(): Promise<any> {
-      const config = await this.http
-      .get<ThinEdgeConfiguration>(CONFIGURATION_URL)
-      .toPromise();
-      Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
-      return config;
-    } */
-    
-    sendCMDToEdge(msg) {
-      this.socket.emit('cmd-in', msg);
-    }
-    
-    getCMDProgress(): Observable<EdgeCMDProgress> {
-      // return this.socket.fromEvent('cmd-edge').pipe(map((data) => JSON.stringify(data)));
-      return this.socket.fromEvent('cmd-progress');
+    //Object.assign(this.edgeConfiguration, CONFIG_CLOUD)
   }
-  
+
+  /*   async loadConfiguration(): Promise<any> {
+    const config = await this.http
+    .get<ThinEdgeConfiguration>(CONFIGURATION_URL)
+    .toPromise();
+    Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
+    return config;
+  } */
+
+  sendCMDToEdge(msg) {
+    this.socket.emit('cmd-in', msg);
+  }
+
+  getCMDProgress(): Observable<EdgeCMDProgress> {
+    // return this.socket.fromEvent('cmd-edge').pipe(map((data) => JSON.stringify(data)));
+    return this.socket.fromEvent('cmd-progress');
+  }
+
+  getMeasurements(): Observable<MongoMeasurment> {
+    this.socket.emit('new-measurement', 'start');
+    const obs = this.socket.fromEvent <string>('new-measurement').pipe( map ( m => JSON.parse(m)))
+    return obs;
+  }
+
+  stopMeasurements(): void {
+    this.socket.emit('new-measurement', 'stop');
+  }
+
   getCMDResult(): Observable<string> {
     return this.socket.fromEvent('cmd-result');
   }
+
   updateEdgeConfiguration(edgeConfiguration: any) {
     this.edgeConfiguration = {
       ...this.edgeConfiguration,
@@ -55,15 +69,15 @@ export class EdgeService {
     }
     console.log("Updated edgeConfiguration:", edgeConfiguration, this.edgeConfiguration);
   }
-  
-  getEdgeStatus() : Promise<any> {
+
+  getEdgeStatus(): Promise<any> {
     return this.http
-    .get<any>(STATUS_URL)
-    .toPromise()
-    .then(res => {
-      console.log("New status", res)
-      return res
-    })
+      .get<any>(STATUS_URL)
+      .toPromise()
+      .then(res => {
+        console.log("New status", res)
+        return res
+      })
   }
   getEdgeConfiguration(): Promise<any> {
     return this.http

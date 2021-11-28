@@ -9,7 +9,7 @@ import { EdgeService } from '../edge.service';
   styleUrls: ['./certificate.component.css']
 })
 export class CertificateComponent implements OnInit {
-  public showACreateCertificate: boolean = false;
+  public showCreateCertificate: boolean = false;
 
   constructor(private edgeService: EdgeService, private alertService: AlertService) { }
 
@@ -18,11 +18,11 @@ export class CertificateComponent implements OnInit {
 
 
   private showManageCertificateDialog(): void {
-    this.showACreateCertificate = true;
+    this.showCreateCertificate = true;
   }
 
   private hideManageCertificateDialog(): void {
-    this.showACreateCertificate = false;
+    this.showCreateCertificate = false;
   }
   public onCloseCertificateDialog(): void {
     this.hideManageCertificateDialog();

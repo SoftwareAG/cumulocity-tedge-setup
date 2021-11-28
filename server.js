@@ -87,6 +87,7 @@ app.post("/config", function (req, res) {
 
 
 io.on('connection', function (socket) {
+    console.log(`New connection: ${socket.id}`);
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
 /*         msg = JSON.parse(message)
