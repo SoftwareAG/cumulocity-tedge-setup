@@ -12,7 +12,7 @@ services:
       - "9080:9080"
    volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./:/app/
+  #  - ./:/app/
       - ./tedge/etc/tedge:/etc/tedge
 
   # tedge:
