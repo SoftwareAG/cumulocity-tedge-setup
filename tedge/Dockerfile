@@ -25,8 +25,9 @@ COPY ./ /app/tedge
 WORKDIR /app/tedge
 RUN npm install -g @angular/cli && npm install
 RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
-RUN mkdir Logs
+# RUN mkdir Logs
 
-CMD ["./start.sh"]
+# CMD ["./start.sh"]
+ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"]
 # ENTRYPOINT ["tail"]
 # CMD ["-f","/dev/null"]
