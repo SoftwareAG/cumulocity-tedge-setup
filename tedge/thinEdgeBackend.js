@@ -8,13 +8,16 @@ const taskQueue = new TaskQueue()
 const propertiesToJSON = require("properties-to-json");
 const MongoClient = require('mongodb').MongoClient;
 const MONGO_URL = "mongodb://mongodb1:27017";
-const MONGO_COLLECTION = "tedge"
+const MONGO_MEASUEMENT_COLLECTION = "tedge"
+const MONGO_SERIES_COLLECTION = "series"
 const MONGO_DB = "localDB"
 const ANALYTICS_CONFIG ='/etc/tedge/analyticsConfig.json'
 
 class ThinEdgeBackend {
 
     static cmdInProgress = false;
+    static measurementCollection = null;
+    static seriesCollection = null;
     constructor(socket) {
         this.socket = socket;
 
@@ -23,7 +26,11 @@ class ThinEdgeBackend {
             this.notifier[key] = this.notifier[key].bind(this)
         });
         //console.log(`Socket: ${socket.id}`)
-        this.connect2Mongo();
+        if (ThinEdgeBackend.measurementCollection == null || ThinEdgeBackend.seriesCollection == null) {
+            console.log(`Connect to mongo first: ${socket.id}`)
+        } else {
+            this.watchMeasurementColletion();
+        }
     }
 
     notifier = {
@@ -65,33 +72,91 @@ class ThinEdgeBackend {
         }
     }
 
+    // connect2Mongo() {
+    //     let localSocket = this.socket;
+    //     MongoClient.connect(MONGO_URL, function(err, client) {
+    //         if (err) throw err;
+    //         let dbo = client.db(MONGO_DB);
+    //         let tedgeCollection = dbo.collection(MONGO_COLLECTION) 
+                     
+    //         let changeStream = null;
 
-    connect2Mongo() {
+    //         // watch measurement collection for changes
+    //         localSocket.on('new-measurement', function (message) {
+    //             console.log(`New measurement cmd: ${message}`);
+    //             if (message == 'start')  {
+    //                 changeStream = tedgeCollection.watch()
+    //                 changeStream.on("change",function(change){
+    //                     // console.log("changed", JSON.stringify(change.fullDocument));
+    //                     // let obj = JSON.parse(change.fullDocument.payload)
+    //                     // change.fullDocument.payload = obj
+    //                     // console.log("changed", JSON.stringify(change.fullDocument));
+    //                     localSocket.emit('new-measurement', JSON.stringify(change.fullDocument))
+    //                 });
+    //             } else if (message == 'stop')  {
+    //                 if ( changeStream) {
+    //                 changeStream.close()
+    //                 }
+    //             } 
+    //         });
+    //       });
+    // }
+
+    watchMeasurementColletion() {
+        let changeStream = null;
         let localSocket = this.socket;
-        MongoClient.connect(MONGO_URL, function(err, db) {
-            if (err) throw err;
-            let dbo = db.db(MONGO_DB);
-            let collection = dbo.collection(MONGO_COLLECTION)          
-            let changeStream = null;
+        // watch measurement collection for changes
+        localSocket.on('new-measurement', function (message) {
+            console.log(`New measurement cmd: ${message}`);
+            if (message == 'start')  {
+                changeStream = ThinEdgeBackend.measurementCollection.watch()
+                changeStream.on("change",function(change){
+                    // console.log("changed", JSON.stringify(change.fullDocument));
+                    // let obj = JSON.parse(change.fullDocument.payload)
+                    // change.fullDocument.payload = obj
+                    // console.log("changed", JSON.stringify(change.fullDocument));
+                    localSocket.emit('new-measurement', JSON.stringify(change.fullDocument))
+                });
+            } else if (message == 'stop')  {
+                if ( changeStream) {
+                changeStream.close()
+                }
+            } 
+        });
+    }
 
-            localSocket.on('new-measurement', function (message) {
-                console.log(`New measurement cmd: ${message}`);
-                if (message == 'start')  {
-                    changeStream = collection.watch()
-                    changeStream.on("change",function(change){
-                        // console.log("changed", JSON.stringify(change.fullDocument));
-                        // let obj = JSON.parse(change.fullDocument.payload)
-                        // change.fullDocument.payload = obj
-                        // console.log("changed", JSON.stringify(change.fullDocument));
-                        localSocket.emit('new-measurement', JSON.stringify(change.fullDocument))
-                    });
-                } else if (message == 'stop')  {
-                    if ( changeStream) {
-                    changeStream.close()
-                    }
-                } 
+    static connect2Mongo() {
+        if (ThinEdgeBackend.measurementCollection == null || ThinEdgeBackend.seriesCollection == null) {
+           console.log('Connecting to mongo ...'); 
+            MongoClient.connect(MONGO_URL, function(err, client) {
+                if (err) throw err;
+                let dbo = client.db(MONGO_DB);
+                ThinEdgeBackend.measurementCollection = dbo.collection(MONGO_MEASUEMENT_COLLECTION) 
+                ThinEdgeBackend.seriesCollection = dbo.collection(MONGO_SERIES_COLLECTION)        
             });
-          });
+        }
+    }
+
+    static getSeries(req, res) {
+        ThinEdgeBackend.seriesCollection.find().toArray(function(err, items) {
+          let result = []
+          for (let index = 0; index < items.length; index++) {
+            if (err) throw err;
+            const item = items[index];
+            let series = []
+            for (const property in item) {
+                if (property != '_id' && property != 'type' && property != 'time' )
+                    series.push(property)
+            }
+            const measurement = {
+                name: item.type,
+                series: series
+            }
+            result.push(measurement)
+            //onsole.log('Series from mongo', item, serie); 
+          }
+          res.status(200).json(result);
+        });
     }
 
     static getEdgeConfiguration(req, res) {

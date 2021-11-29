@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { IManagedObject, IResultList, IResult, IExternalIdentity, Client, BasicAuth, FetchClient, IFetchOptions, IFetchResponse, IdentityService, InventoryService, IdReference } from '@c8y/client';
-import { EdgeCMDProgress, MongoMeasurment } from './property.model';
+import { IExternalIdentity, Client, BasicAuth, FetchClient, IFetchOptions, IFetchResponse, IdentityService, InventoryService, IdReference } from '@c8y/client';
+import { EdgeCMDProgress, MeasurmentType, RawMeasurment } from './property.model';
 import { Socket } from 'ngx-socket-io';
 import { Observable, from } from 'rxjs';
 import { map } from "rxjs/operators"
@@ -13,6 +13,7 @@ const ANALYTICS_CONFIGURATION_URL = '/api/analyticsConfiguration'
 const PROXY_CONFIG_URL = '/config';
 const DOWNLOADCERTIFICATE_URL = "/api/certificate";
 const STATUS_URL = "/api/status";
+const SERIES_URL =  "/api/series";
 
 @Injectable({
   providedIn: 'root'
@@ -49,7 +50,7 @@ export class EdgeService {
     return this.socket.fromEvent('cmd-progress');
   }
 
-  getMeasurements(): Observable<MongoMeasurment> {
+  getMeasurements(): Observable<RawMeasurment> {
     this.socket.emit('new-measurement', 'start');
     const obs = this.socket.fromEvent <string>('new-measurement').pipe( map ( m => JSON.parse(m)))
     return obs;
@@ -87,6 +88,15 @@ export class EdgeService {
       .then(config => {
         Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
         return this.edgeConfiguration
+      })
+  }
+
+  getSeries(): Promise<any> {
+    return this.http
+      .get<MeasurmentType[]>(SERIES_URL)
+      .toPromise()
+      .then(config => {
+        return config
       })
   }
 

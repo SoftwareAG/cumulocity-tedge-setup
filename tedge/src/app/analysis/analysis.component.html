@@ -27,7 +27,7 @@
 
 <div [ngClass]="{ drawerOpen: showDialog }">
   <div class="bottom-drawer">
-    <cumulocity-datapoints-charting-config (onChangeConfig)="configurationChanged($event)"
+    <cumulocity-datapoints-charting-config (onChangeConfig)="configurationChanged($event)" (onClose)="showDialog = !showDialog"
       *ngIf="showDialog"
       class="d-contents"
       [config]="config"

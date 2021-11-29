@@ -19,16 +19,16 @@
  * @format
  */
 
-import { Component, Input, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseChartDirective, Color, Label, ThemeService } from 'ng2-charts';
-import { ChartDataSets, ChartOptions, ChartPoint, PositionType } from 'chart.js';
+import { ChartDataSets, ChartOptions, ChartPoint } from 'chart.js';
 import { EdgeService } from '../edge.service';
 import { DatePipe } from '@angular/common';
 import * as _ from "lodash";
 import * as moment from "moment";
 import { Observable, Subscription, timer } from 'rxjs';
-import { MongoMeasurment } from '../property.model';
-import { generateNextColor, rangeUnits } from './widget-helper';
+import { RawMeasurment } from '../property.model';
+import { flatten, generateNextColor, rangeUnits } from './widget-helper';
 
 @Component({
     selector: "cumulocity-datapoints-charting-widget",
@@ -36,9 +36,6 @@ import { generateNextColor, rangeUnits } from './widget-helper';
     styleUrls: ["./cumulocity-datapoints-charting-widget.component.css"],
     providers: [DatePipe, ThemeService]
 })
-
-
-
 
 export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
     @ViewChild(BaseChartDirective, { static: true })
@@ -112,7 +109,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
     };
 
     subscriptionMongoMeasurement: Subscription;
-    measurements$: Observable<MongoMeasurment>
+    measurements$: Observable<RawMeasurment>
 
     constructor(
       private edgeService: EdgeService,
@@ -130,7 +127,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
         // send empty data to advance graph
         timer(0,1000).pipe().subscribe(y => {
           const ts = Date.now();
-          let t: MongoMeasurment = {
+          let t: RawMeasurment = {
             datetime: new Date(),
             payload: ''
           }
@@ -138,7 +135,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
         });
     
         this.measurements$ = this.edgeService.getMeasurements()
-        this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: MongoMeasurment) => {
+        this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: RawMeasurment) => {
           //console.log("New Mongo Measurement", m)
           this.pushEventToChartData(m)
         })
@@ -146,7 +143,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
       }
     
     
-      private pushEventToChartData(event: MongoMeasurment): void {
+      private pushEventToChartData(event: RawMeasurment): void {
         const _chartData = this.chartData;
         const _chartLabels = this.chartLabels
     
@@ -155,7 +152,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
           _chartData.splice(0, 1);
         }
     
-        let flat = this.flatten(event.payload)
+        let flat = flatten(event.payload)
         //console.log("Log initial ", flat, event);
         for (let key in flat) {
           //console.log("Testing key", this.chartDataPointList[key], key);
@@ -206,33 +203,9 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
         this.update()
       }
     
-      private getLabel(event: MongoMeasurment): string {
+      private getLabel(event: RawMeasurment): string {
         let formattedDate = moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z')
         return formattedDate.toISOString()
-      }
-    
-      private flatten(data) {
-        var result = {};
-        function recurse(cur, prop) {
-          if (Object(cur) !== cur) {
-            result[prop] = cur;
-          } else if (Array.isArray(cur)) {
-            for (var i = 0, l = cur.length; i < l; i++)
-              recurse(cur[i], prop ? prop + "." + i : "" + i);
-            if (l == 0)
-              result[prop] = [];
-          } else {
-            var isEmpty = true;
-            for (var p in cur) {
-              isEmpty = false;
-              recurse(cur[p], prop ? prop + "." + p : p);
-            }
-            if (isEmpty)
-              result[prop] = {};
-          }
-        }
-        recurse(data, '');
-        return result;
       }
     
       private update() {

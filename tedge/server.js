@@ -46,6 +46,7 @@ const io = socketIO(server);
 server.listen(process.env.PORT || 9080, function () {
     var port = server.address().port;
     console.log("App now running on port", port);
+    thinEdgeBackend.ThinEdgeBackend.connect2Mongo();
 });
 
 
@@ -58,9 +59,16 @@ app.get("/api/certificate", function (req, res) {
     res.status(200).sendFile("/etc/tedge/device-certs/tedge-certificate.pem");
 });
 
+/*  "/api/series"
+*   GET: series 
+*/
+app.get("/api/series", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getSeries(req,res)
+});
 
-/*  "/api/configuration"
-*   GET: configuration 
+
+/*  "/api/edgeConfiguration"
+*   GET: edgeConfiguration 
 */
 app.get("/api/edgeConfiguration", function (req, res) {
     thinEdgeBackend.ThinEdgeBackend.getEdgeConfiguration(req,res)

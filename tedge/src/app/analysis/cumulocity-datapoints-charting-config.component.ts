@@ -1,6 +1,7 @@
 
 import { Component, OnInit, EventEmitter, Output, Input} from '@angular/core';
-import { RawListItem } from '../property.model';
+import { EdgeService } from '../edge.service';
+import { MeasurmentType, RawListItem } from '../property.model';
 import { rangeUnits } from './widget-helper';
 
 @Component({
@@ -10,17 +11,25 @@ import { rangeUnits } from './widget-helper';
 })
 export class CumulocityDatapointsChartingConfigComponent implements OnInit {
 
-  constructor() { }
+  constructor(public edgeService: EdgeService) { }
+
   @Output() onChangeConfig = new EventEmitter<any>();
+  @Output() onClose = new EventEmitter<any>();
   @Input() config;
+  measurementTypes: MeasurmentType[] = []
 
   rangeUnits: RawListItem[] = rangeUnits
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.measurementTypes = await this.edgeService.getSeries();
   }
 
-  public onChangeClicked(): void {
+  public onSaveClicked(): void {
     this.onChangeConfig.emit(this.config);
+  }
+
+  public onCloseClicked(): void {
+    this.onClose.emit();
   }
 
   public updateConfig(): void {

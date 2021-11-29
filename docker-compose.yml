@@ -45,14 +45,16 @@ services:
   mongodb1:
     image: mongo:latest
     container_name: mongodb1
-    # environment:
-    #   MONGO_INITDB_ROOT_USERNAME: root
-    #   MONGO_INITDB_ROOT_PASSWORD: example
+    environment:
+    #  MONGO_INITDB_ROOT_USERNAME: root
+    #  MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_REPLICA_SET_NAME: rsmongo
     expose:
       - "27017"
     ports:
       - "27017:27017"
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rsmongo", "--journal", "--dbpath", "/data/db" ]
+    command: ["--bind_ip_all", "--replSet",  "rsmongo", "--journal",  "--dbpath", "/data/db"]
+    # entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rsmongo", "--journal", "--dbpath", "/data/db" ]
     # entrypoint: ["tail", "-f", "/dev/null"]
     volumes:
       - ./mongo/data1/db:/data/db # This is where your volume will persist. e.g. VOLUME-DIR = ./volumes/mongodb
@@ -64,6 +66,9 @@ services:
       image: "mongo-setup"
       build: "./mongo"
       container_name: "mongosetup"
+      # environment:
+      #  MONGO_USERNAME: root
+      #  MONGO_PASSWORD: example
       depends_on:
           - mongodb1
       volumes:

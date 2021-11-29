@@ -36,7 +36,7 @@ export interface EdgeCMDProgress {
 }
 
 
-export interface MongoMeasurment {
+export interface RawMeasurment {
   _id?: string
   topic?: string
   payload?: Object
@@ -59,7 +59,10 @@ export interface MongoMeasurment {
   //     this.qos = qos
   // }
 }
-
+export interface MeasurmentType {
+  type: string
+  series: string[]
+}
 
 export interface RawListItem {
   id: any;

@@ -39,3 +39,27 @@ export const rangeUnits: RawListItem[] = [
     { id: 7776000, text: "quarter", format: "[Q]Q - YYYY" },
     { id: 31536000, text: "year", format: "YYYY" },
 ];
+
+export const flatten = function(data) {
+    var result = {};
+    function recurse(cur, prop) {
+      if (Object(cur) !== cur) {
+        result[prop] = cur;
+      } else if (Array.isArray(cur)) {
+        for (var i = 0, l = cur.length; i < l; i++)
+          recurse(cur[i], prop ? prop + "." + i : "" + i);
+        if (l == 0)
+          result[prop] = [];
+      } else {
+        var isEmpty = true;
+        for (var p in cur) {
+          isEmpty = false;
+          recurse(cur[p], prop ? prop + "." + p : p);
+        }
+        if (isEmpty)
+          result[prop] = {};
+      }
+    }
+    recurse(data, '');
+    return result;
+  }

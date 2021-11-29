@@ -79,17 +79,29 @@ class Mongo(object):
             #
             # update series list
             #
-            # seriesList_Raw =  json.loads(document['payload'])
-            # seriesList = flatten(seriesList_Raw, '_')
             seriesList = flatten(document['payload'], '_')
             # replace existing '.' for '-' to avoid being recognized as objects
             seriesListCleaned = {}
+            # this approach is not workind, since the last series overwrites existing  series entries
+            # series = []
+            # for key in seriesList:
+            #     # ignore meta properties, since no series
+            #     if ( key != 'type' and key != 'time'):
+            #         series.append(key.replace(".", "_"))
+            # seriesListCleaned['type'] = document['type']
+            # seriesListCleaned['series'] = series
+            # print("New seriesList :", seriesListCleaned)
+
             for key in seriesList:
-                newKey= key.replace(".", "_")
-                seriesListCleaned[newKey] =  seriesList[key]
+                # ignore meta properties, since no series
+                if ( key != 'type' and key != 'time'):
+                    seriesListCleaned[key.replace(".", "_")] = ""
             seriesListCleaned['type'] = document['type']
             print("New seriesList :", seriesListCleaned)
+
             result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
+
+            # result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
             print("Saved in Mongo document, series:", result.inserted_id, result1.updated_id)
             if not result.acknowledged:
                 # Enqueue message if it was not saved properly
