@@ -205,7 +205,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
           ++this.chartDataPointList.index
         }
         let dp: ChartPoint = {
-          x: moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z'),
+          x: moment.parseZone(event.datetime),
           y: flat[key]
         };
         //console.log("New DataPoint",dp );
@@ -238,7 +238,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
   }
 
   private getLabel(event: RawMeasurment): string {
-    let formattedDate = moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z')
+    let formattedDate = moment.parseZone(event.datetime)
     return formattedDate.toISOString()
   }
 

@@ -7,9 +7,9 @@ const fs = require('fs');
 const taskQueue = new TaskQueue()
 const propertiesToJSON = require("properties-to-json");
 const MongoClient = require('mongodb').MongoClient;
-const MONGO_URL = "mongodb://mongodb1:27017";
-const MONGO_MEASUEMENT_COLLECTION = "tedge"
-const MONGO_SERIES_COLLECTION = "series"
+const MONGO_URL = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`;
+const MONGO_MEASUEMENT_COLLECTION = "measurement"
+const MONGO_SERIES_COLLECTION = "serie"
 const MONGO_DB = "localDB"
 const ANALYTICS_CONFIG ='/etc/tedge/analyticsConfig.json'
 

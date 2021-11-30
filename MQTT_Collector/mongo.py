@@ -14,10 +14,9 @@ MONGO_HOST = os.environ['MONGO_HOST']
 MONGO_PORT = int(os.environ['MONGO_PORT'])
 MONGO_URI = f"mongodb://{MONGO_HOST}:{MONGO_PORT}"  # mongodb://user:pass@ip:port || mongodb://ip:port
 MONGO_DB = "localDB"
-MONGO_COLLECTION = "tedge"
-MONGO_COLLECTION_SERIES = "series"
+MONGO_COLLECTION_MEASUREMENT = "measurement"
+MONGO_COLLECTION_SERIES = "serie"
 MONGO_TIMEOUT = 1  # Time in seconds
-MONGO_DATETIME_FORMAT = "%d/%m/%Y %H:%M:%S"
 
 
 class Mongo(object):
@@ -32,7 +31,7 @@ class Mongo(object):
         print("Connecting Mongo")
         self.client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=MONGO_TIMEOUT*1000.0)
         self.database = self.client.get_database(MONGO_DB)
-        self.collectionMeasurement = self.database.get_collection(MONGO_COLLECTION)
+        self.collectionMeasurement = self.database.get_collection(MONGO_COLLECTION_MEASUREMENT)
         self.collectionSeries = self.database.get_collection(MONGO_COLLECTION_SERIES)
 
     def disconnect(self):
@@ -70,7 +69,7 @@ class Mongo(object):
                 "type": messageType,
                 "qos": msg.qos,
                 "timestamp": int(now.timestamp()),
-                "datetime": now.strftime(MONGO_DATETIME_FORMAT),
+                "datetime": now,
                 # TODO datetime must be fetched right when the message is received
                 # It will be wrong when a queued message is stored
             }
@@ -96,6 +95,7 @@ class Mongo(object):
                 if ( key != 'type' and key != 'time'):
                     seriesListCleaned[key.replace(".", "_")] = ""
             seriesListCleaned['type'] = document['type']
+            seriesListCleaned['datetime'] = now
             print("New seriesList :", seriesListCleaned)
 
             result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)

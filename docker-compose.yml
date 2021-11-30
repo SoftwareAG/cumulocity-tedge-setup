@@ -1,19 +1,26 @@
 version: "3.0"
 services:
   tedge:
-   build: ./tedge
-   hostname: tedge
-   container_name: thin-edge-setup.io
-   expose:
+    build: ./tedge
+    hostname: tedge
+    container_name: thin-edge-setup.io
+    expose:
       - "1883"
       - "9080"
-   ports:
+    ports:
       - "1883:1883"
       - "9080:9080"
-   volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - MONGO_HOST=mongodb1
+      - MONGO_PORT=27017
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  # Test version: map local directory and build angular locally (three thre changes are required in total)  
+  # 1. map locally
+  # 2. run in tedge cmd: npm run build to build outside of the container, the result is then mapped with the following volume mapping:  ./:/app/
+  # 3. enable entrypoint ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"] in tedge/Dockerfile
   #  - ./:/app/
-      - ./tedge/etc/tedge:/etc/tedge
+    - ./tedge/etc/tedge:/etc/tedge
 
   # tedge:
   #  image: eclipse-mosquitto
@@ -28,8 +35,8 @@ services:
   #  volumes:
   #     - /var/run/docker.sock:/var/run/docker.sock
   #     - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
- #     - ./mosquitto/log/:/mosquitto/mosquitto.log
- 
+  #     - ./mosquitto/log/:/mosquitto/mosquitto.log
+
   mqtt_collector:
     build: ./MQTT_Collector
     hostname: mqtt_collector
@@ -46,14 +53,22 @@ services:
     image: mongo:latest
     container_name: mongodb1
     environment:
-    #  MONGO_INITDB_ROOT_USERNAME: root
-    #  MONGO_INITDB_ROOT_PASSWORD: example
+      #  MONGO_INITDB_ROOT_USERNAME: root
+      #  MONGO_INITDB_ROOT_PASSWORD: example
       MONGO_REPLICA_SET_NAME: rsmongo
     expose:
       - "27017"
     ports:
       - "27017:27017"
-    command: ["--bind_ip_all", "--replSet",  "rsmongo", "--journal",  "--dbpath", "/data/db"]
+    command:
+      [
+        "--bind_ip_all",
+        "--replSet",
+        "rsmongo",
+        "--journal",
+        "--dbpath",
+        "/data/db"
+      ]
     # entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rsmongo", "--journal", "--dbpath", "/data/db" ]
     # entrypoint: ["tail", "-f", "/dev/null"]
     volumes:
@@ -63,13 +78,13 @@ services:
       restart_policy:
         condition: on-failure
   mongosetup:
-      image: "mongo-setup"
-      build: "./mongo"
-      container_name: "mongosetup"
-      # environment:
-      #  MONGO_USERNAME: root
-      #  MONGO_PASSWORD: example
-      depends_on:
-          - mongodb1
-      volumes:
-          - ./mongo/data2:/data/
+    image: "mongo-setup"
+    build: "./mongo"
+    container_name: "mongosetup"
+    # environment:
+    #  MONGO_USERNAME: root
+    #  MONGO_PASSWORD: example
+    depends_on:
+      - mongodb1
+    volumes:
+      - ./mongo/data2:/data/
