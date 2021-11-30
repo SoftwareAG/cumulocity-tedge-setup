@@ -19,7 +19,7 @@
  * @format
  */
 
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { BaseChartDirective, Color, Label, ThemeService } from 'ng2-charts';
 import { ChartDataSets, ChartOptions, ChartPoint } from 'chart.js';
 import { EdgeService } from '../edge.service';
@@ -31,197 +31,231 @@ import { RawMeasurment } from '../property.model';
 import { flatten, generateNextColor, rangeUnits } from './widget-helper';
 
 @Component({
-    selector: "cumulocity-datapoints-charting-widget",
-    templateUrl: "./cumulocity-datapoints-charting-widget.component.html",
-    styleUrls: ["./cumulocity-datapoints-charting-widget.component.css"],
-    providers: [DatePipe, ThemeService]
+  selector: "cumulocity-datapoints-charting-widget",
+  templateUrl: "./cumulocity-datapoints-charting-widget.component.html",
+  styleUrls: ["./cumulocity-datapoints-charting-widget.component.css"],
+  providers: [DatePipe, ThemeService]
 })
 
-export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit {
-    @ViewChild(BaseChartDirective, { static: true })
-    chart: BaseChartDirective;
+export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, OnChanges {
 
-    @Input() config;
-    chartType = "line";
-    chartData: ChartDataSets[] = [
-      //  { data: [], label: "Number of Events", fill: false }
-    ];
-    chartColors: Color[] = [
-      // {
-      //   borderColor: "#039BE5",
-      //   pointBackgroundColor: "#039BE5"
-      // }
-    ];
-  
-    chartLabels: Label[] = []
-    chartDataPointList: { [name: string]: number } = { index: 0 };
-  
-    //rangeUnit: number =  1;
-    //rangeUnitCount = 30; // 5 minutes
-  
-    chartOptions: ChartOptions = {
-      // animation: {
-      //   animateScale: false,
-      //   animateRotate: true,
-      //   duration: 1000,
-      //   easing: 'linear',
-      // },
-      elements: {
-        line: {
-          tension: 0
-        }
-      },
-      responsive: true,
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              //  steps : 25,
-              //  stepValue : 15,
-              //  max : 40,
-              min: 0,
-            },
+  @ViewChild(BaseChartDirective, { static: true })
+  chart: BaseChartDirective;
+
+  @Input() config;
+  chartType = "line";
+  chartData: ChartDataSets[] = [
+    //  { data: [], label: "Number of Events", fill: false }
+  ];
+  chartColors: Color[] = [
+    // {
+    //   borderColor: "#039BE5",
+    //   pointBackgroundColor: "#039BE5"
+    // }
+  ];
+
+  chartLabels: Label[] = []
+  chartDataPointList: { [name: string]: number } = { index: 0 };
+
+  //rangeUnit: number =  1;
+  //rangeUnitCount = 30; // 5 minutes
+
+  chartOptions: ChartOptions = {
+    // animation: {
+    //   animateScale: false,
+    //   animateRotate: true,
+    //   duration: 1000,
+    //   easing: 'linear',
+    // },
+    elements: {
+      line: {
+        tension: 0
+      }
+    },
+    responsive: true,
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            //beginAtZero: true
           },
-        ],
-        xAxes: [
-          {
-            type: 'time',
-            time: {
-              unit: 'second',
-              display: true
-            },
-            ticks: {
-              // min: Date.now(),
-              autoSkip: true,
-              maxTicksLimit: 20
-            }
+        },
+      ],
+      xAxes: [
+        {
+          type: 'time',
+          time: {
+            unit: 'second',
+            display: true
           },
-        ],
-      },
-      // plugins: {
-      //      legend: {
-      //         labels: {
-      //            filter: (legendItem, chartData) => (chartData.datasets[legendItem.datasetIndex].data.length >101)
-      //         }
-      //      }
-      //   }
-      //responsiveAnimationDuration: 5000,
-    };
-
-    subscriptionMongoMeasurement: Subscription;
-    measurements$: Observable<RawMeasurment>
-
-    constructor(
-      private edgeService: EdgeService,
-    ) { }
-
-
-    /**
-     * These are the main interfaces to the config
-     * and the measurements
-     */
-
-     ngOnInit() {
-   
-      console.log("Widget config:", this.config)
-        // send empty data to advance graph
-        timer(0,1000).pipe().subscribe(y => {
-          const ts = Date.now();
-          let t: RawMeasurment = {
-            datetime: new Date(),
-            payload: ''
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 20
           }
-          this.pushEventToChartData(t)
-        });
-    
-        this.measurements$ = this.edgeService.getMeasurements()
-        this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: RawMeasurment) => {
-          //console.log("New Mongo Measurement", m)
-          this.pushEventToChartData(m)
-        })
-        //console.log("Really key",  this.chartData.length)
+        },
+      ],
+    },
+  };
+
+  subscriptionMongoMeasurement: Subscription;
+  measurements$: Observable<RawMeasurment>
+
+  constructor(
+    private edgeService: EdgeService,
+  ) { }
+
+
+  /**
+   * These are the main interfaces to the config
+   * and the measurements
+   */
+
+  ngOnInit() {
+    console.log("Widget config:", this.config)
+
+    // send empty data to advance graph
+    timer(0, 1000).pipe().subscribe(y => {
+      const ts = Date.now();
+      let t: RawMeasurment = {
+        datetime: new Date(),
+        payload: ''
       }
-    
-    
-      private pushEventToChartData(event: RawMeasurment): void {
-        const _chartData = this.chartData;
-        const _chartLabels = this.chartLabels
-    
-        // mysterious bug to remove undefined series
-        if (this.chartDataPointList.index == 0 && _chartData.length == 1 && _chartData[0].label == undefined) {
-          _chartData.splice(0, 1);
-        }
-    
-        let flat = flatten(event.payload)
-        //console.log("Log initial ", flat, event);
-        for (let key in flat) {
-          //console.log("Testing key", this.chartDataPointList[key], key);
-          if (key.endsWith('value')) {
-            // test if key is already in chartDataPoint
-            // add new series
-            if (this.chartDataPointList[key] === undefined) {
-              _chartData.push({ data: [], label: key, fill: false })
-              let nextColor = generateNextColor(this.chartDataPointList.index)
-              this.chartColors.push({
-                borderColor: nextColor,
-                pointBackgroundColor: nextColor
-              })
-              this.chartDataPointList[key] = this.chartDataPointList.index
-              //console.log("Adding key", this.chartDataPointList[key], key);
-              ++this.chartDataPointList.index
+      this.pushEventToChartData(t)
+    });
+
+    this.measurements$ = this.edgeService.getMeasurements()
+    this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: RawMeasurment) => {
+      //console.log("New Mongo Measurement", m)
+      this.pushEventToChartData(m)
+    })
+    //console.log("Really key",  this.chartData.length)
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    for (const propName in changes) {
+      const changedProp = changes[propName];
+      let fitAxis = (changedProp.currentValue.fitAxis === 'true')
+      console.log("Changed config", changedProp, propName, parseInt(changedProp.currentValue.rangeLow), fitAxis)
+      if (propName == "config") {
+        let options  = {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  //beginAtZero: true
+                },
+              },
+            ],
+            xAxes: [{
+              type: 'time',
+              time: {
+                unit: 'second',
+                display: true
+              },
+              ticks: {
+                autoSkip: true,
+                maxTicksLimit: 20
+              }
             }
-            let dp: ChartPoint = {
-              x: moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z'),
-              y: flat[key]
-            };
-            //console.log("New DataPoint",dp );
-            (_chartData[this.chartDataPointList[key]].data as ChartPoint[]).push(dp)
-          } else {
-            //console.log("Ignore key", this.chartDataPointList[key], key);
+            ]
           }
         }
-        _chartLabels.push(this.getLabel(event));
-    
-        // remove outdated data and labels
-        let { from, to } = this.getDateRange();
-        _chartData.forEach(cd => {
-          //console.log("Comparing label", cd.label, cd.data.length, moment(cd.data['x']).toISOString(), moment(from).toISOString())
-          while (moment(cd.data[0]['x']).isBefore(moment(from))) {
-            //console.log("Removing label", cd.data[0])
-            cd.data.shift();
-          }
+        if (parseInt(changedProp.currentValue.rangeLow)) {
+          options.scales.yAxes[0].ticks['min']= parseInt(changedProp.currentValue.rangeLow)
         }
-        )
-    
-        while (moment(_chartLabels[0]).isBefore(moment(from))) {
-          _chartLabels.shift();
+        if (parseInt(changedProp.currentValue.rangeHigh)) {
+          options.scales.yAxes[0].ticks['max'] = parseInt(changedProp.currentValue.rangeHigh)
         }
-    
-        //console.log("L", _chartData.length)
-        this.chartData = _chartData
-        this.chartLabels = _chartLabels
-        this.update()
-      }
-    
-      private getLabel(event: RawMeasurment): string {
-        let formattedDate = moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z')
-        return formattedDate.toISOString()
-      }
-    
-      private update() {
-        if (this.chart)
-          this.chart.chart.update();
-      }
-    
-      private getDateRange(): { from: Date; to: Date; } {
-        let to = Date.now();
-    
-        let from = new Date(to - rangeUnits[this.config.rangeUnit].id    * this.config.rangeUnitCount * 1000);
-        return { from, to: new Date(to) };
-      }
- 
-      ngOnDestroy() {
-        this.subscriptionMongoMeasurement.unsubscribe();
-        this.edgeService.stopMeasurements();
+        this.chartOptions = {
+          ...this.chartOptions,
+          ...options
+
+        } as ChartOptions
+
+        console.log("Now can change config", changedProp.currentValue.rangeLow, changedProp.currentValue.rangeHigh)
       }
     }
+  }
+
+  private pushEventToChartData(event: RawMeasurment): void {
+    const _chartData = this.chartData;
+    const _chartLabels = this.chartLabels
+
+    // mysterious bug to remove undefined series
+    if (this.chartDataPointList.index == 0 && _chartData.length == 1 && _chartData[0].label == undefined) {
+      _chartData.splice(0, 1);
+    }
+
+    let flat = flatten(event.payload)
+    //console.log("Log initial ", flat, event);
+    for (let key in flat) {
+      //console.log("Testing key", this.chartDataPointList[key], key);
+      if (key.endsWith('value')) {
+        // test if key is already in chartDataPoint
+        // add new series
+        if (this.chartDataPointList[key] === undefined) {
+          _chartData.push({ data: [], label: key, fill: false })
+          let nextColor = generateNextColor(this.chartDataPointList.index)
+          this.chartColors.push({
+            borderColor: nextColor,
+            pointBackgroundColor: nextColor
+          })
+          this.chartDataPointList[key] = this.chartDataPointList.index
+          //console.log("Adding key", this.chartDataPointList[key], key);
+          ++this.chartDataPointList.index
+        }
+        let dp: ChartPoint = {
+          x: moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z'),
+          y: flat[key]
+        };
+        //console.log("New DataPoint",dp );
+        (_chartData[this.chartDataPointList[key]].data as ChartPoint[]).push(dp)
+      } else {
+        //console.log("Ignore key", this.chartDataPointList[key], key);
+      }
+    }
+    _chartLabels.push(this.getLabel(event));
+
+    // remove outdated data and labels
+    let { from, to } = this.getDateRange();
+    _chartData.forEach(cd => {
+      //console.log("Comparing label", cd.label, cd.data.length, moment(cd.data['x']).toISOString(), moment(from).toISOString())
+      while (moment(cd.data[0]['x']).isBefore(moment(from))) {
+        //console.log("Removing label", cd.data[0])
+        cd.data.shift();
+      }
+    }
+    )
+
+    while (moment(_chartLabels[0]).isBefore(moment(from))) {
+      _chartLabels.shift();
+    }
+
+    //console.log("L", _chartData.length)
+    this.chartData = _chartData
+    this.chartLabels = _chartLabels
+    this.update()
+  }
+
+  private getLabel(event: RawMeasurment): string {
+    let formattedDate = moment.parseZone(event.datetime, 'DD/MM/YYYY HH:mm:ss Z')
+    return formattedDate.toISOString()
+  }
+
+  private update() {
+    if (this.chart)
+      this.chart.chart.update();
+  }
+
+  private getDateRange(): { from: Date; to: Date; } {
+    let to = Date.now();
+
+    let from = new Date(to - rangeUnits[this.config.rangeUnit].id * this.config.rangeUnitCount * 1000);
+    return { from, to: new Date(to) };
+  }
+
+  ngOnDestroy() {
+    this.subscriptionMongoMeasurement.unsubscribe();
+    this.edgeService.stopMeasurements();
+  }
+}

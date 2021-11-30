@@ -16,6 +16,16 @@
                             {{ rType.text }}
                         </option>
                     </select>
+                    <label for="fitAxis" translate>Fit Axis </label>
+                    <input id="fitAxis" class="form-check-input" style="vertical-align:middle;" type="checkbox" 
+                    [(ngModel)]="config.fitAxis" (click)="updateFitAxis()"/>
+
+                    <div [hidden]="config.fitAxis">
+                        <label translate>Lower range y-axis</label>
+                        <input class="form-control" [(ngModel)]="config.rangeLow" placeholder="restrict y axis to interval, here lower border" required />
+                        <label translate>Upper range y-axis</label>
+                        <input class="form-control" [(ngModel)]="config.rangeHigh" placeholder="restrict y axis to interval, here upper border" required />
+                    </div>
                 </div>
             </div>
         </div>
