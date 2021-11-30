@@ -66,7 +66,6 @@ class Mongo(object):
                     messageType = x
             document = {
                 "topic": msg.topic,
-            #    "payload": msg.payload.decode(),
                 "payload": json.loads(msg.payload),
                 "type": messageType,
                 "qos": msg.qos,
@@ -102,7 +101,7 @@ class Mongo(object):
             result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
 
             # result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
-            print("Saved in Mongo document, series:", result.inserted_id, result1.updated_id)
+            print("Saved in Mongo document, series:", result.inserted_id, result1)
             if not result.acknowledged:
                 # Enqueue message if it was not saved properly
                 self._enqueue(msg)

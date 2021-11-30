@@ -27,3 +27,11 @@ rsconf = {
 }
 
 rs.initiate(rsconf);
+
+keys = { lastModifiedDate: -1 };
+options = { 
+    expireAfterSeconds: 60, 
+    partialFilterExpression: { pending: true }
+};
+db.getCollection("tedge").createIndex(keys, options);
+db.createCollection('series')
