@@ -29,9 +29,11 @@ rsconf = {
 rs.initiate(rsconf);
 
 keys = { datetime: 1 };
+ttl =  _getEnv('TTL_DOCUMENT')
 options = { 
-    expireAfterSeconds: 60, 
-    partialFilterExpression: { pending: true }
-};
-db.getCollection("measurement").createIndex(keys, options);
+    expireAfterSeconds: parseInt(ttl)
+}
+print("Setting TTL for measurements to:", ttl)
+db = db.getSiblingDB('localDB')
+db.measurement.createIndex(keys, options);
 db.createCollection('serie')

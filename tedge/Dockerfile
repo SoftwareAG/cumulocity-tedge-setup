@@ -10,7 +10,8 @@ ENV TEDGE=$TEDGE_VERSION
 RUN apt update
 #RUN apt-get install --yes mosquitto supervisor libmosquitto1 collectd-core collectd nano sudo curl wget
 RUN apt-get install --yes mosquitto supervisor libmosquitto1 collectd-core collectd nano sudo curl wget procps
-RUN apt-get install --yes docker.io nodejs npm 
+# RUN apt-get install --yes docker.io nodejs npm 
+RUN apt-get install --yes nodejs npm 
 
 # install edge
 # COPY ./tedge/plugins /etc/tedge/sm-plugins

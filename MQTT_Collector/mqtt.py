@@ -38,7 +38,7 @@ class MQTT(object):
 
     # noinspection PyUnusedLocal
     def on_message(self, client: mqtt.Client, userdata, msg: mqtt.MQTTMessage):
-        print("Rx MQTT")
+        # print("Rx MQTT")
         self.mongo.save(msg)
 
     def run(self):

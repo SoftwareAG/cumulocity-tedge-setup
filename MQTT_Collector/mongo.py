@@ -57,21 +57,30 @@ class Mongo(object):
 
     def __store_thread_f(self, msg: mqtt.MQTTMessage):
         print("Storing")
-        now = datetime.now()
         try:
             ###Check here for payload parsing of measurement
             for y, x in json.loads(msg.payload).items():
                 if y == "type":
                     messageType = x
+            
+            payload = {}
+            # initialize time wioth current time and overwrite with time in payload later
+            time = datetime.now()
+            try:        
+                payload = json.loads(msg.payload)
+                if time in payload:
+                    time = payload.time
+            except Exception as ex:
+                print("Could not parse payload as json", ex)
+                payload = msg.payload
+
             document = {
                 "topic": msg.topic,
-                "payload": json.loads(msg.payload),
+                "payload": payload,
                 "type": messageType,
                 "qos": msg.qos,
-                "timestamp": int(now.timestamp()),
-                "datetime": now,
-                # TODO datetime must be fetched right when the message is received
-                # It will be wrong when a queued message is stored
+                "timestamp": int(time.timestamp()),
+                "datetime": time,
             }
             result = self.collectionMeasurement.insert_one(document)
             #
@@ -95,13 +104,13 @@ class Mongo(object):
                 if ( key != 'type' and key != 'time'):
                     seriesListCleaned[key.replace(".", "_")] = ""
             seriesListCleaned['type'] = document['type']
-            seriesListCleaned['datetime'] = now
-            print("New seriesList :", seriesListCleaned)
+            seriesListCleaned['datetime'] = time
+            # print("New seriesList :", seriesListCleaned)
 
             result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
 
             # result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
-            print("Saved in Mongo document, series:", result.inserted_id, result1)
+            print("Saved in Mongo document, series:", result.inserted_id, result1.modified_count)
             if not result.acknowledged:
                 # Enqueue message if it was not saved properly
                 self._enqueue(msg)
@@ -114,7 +123,7 @@ class Mongo(object):
         th.start()
 
     def save(self, msg: mqtt.MQTTMessage):
-        print("Saving")
+        # print("Saving")
         if msg.retain:
             print("Skipping retained message")
             return
