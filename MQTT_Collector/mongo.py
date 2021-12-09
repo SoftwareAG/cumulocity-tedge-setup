@@ -49,6 +49,16 @@ class Mongo(object):
             return False
         else:
             return True
+    
+    def save(self, msg: mqtt.MQTTMessage):
+        # print("Saving")
+        if msg.retain:
+            print("Skipping retained message")
+            return
+        if self.connected():
+            self._store(msg)
+        else:
+            self._enqueue(msg)
 
     def _enqueue(self, msg: mqtt.MQTTMessage):
         print("Enqueuing")
@@ -56,18 +66,19 @@ class Mongo(object):
         # TODO process queue
 
     def __store_thread_f(self, msg: mqtt.MQTTMessage):
-        print("Storing")
+        # print("Storing")
         try:
-            ###Check here for payload parsing of measurement
+            # Check here for payload parsing of measurement
             for y, x in json.loads(msg.payload).items():
                 if y == "type":
                     messageType = x
             
             payload = {}
-            # initialize time wioth current time and overwrite with time in payload later
+            # initialize time with current time and overwrite with time in payload later
             time = datetime.now()
             try:        
                 payload = json.loads(msg.payload)
+                # use time from message 
                 if time in payload:
                     time = payload.time
             except Exception as ex:
@@ -82,36 +93,22 @@ class Mongo(object):
                 "timestamp": int(time.timestamp()),
                 "datetime": time,
             }
-            result = self.collectionMeasurement.insert_one(document)
-            #
-            # update series list
-            #
-            seriesList = flatten(document['payload'], '_')
-            # replace existing '.' for '-' to avoid being recognized as objects
-            seriesListCleaned = {}
-            # this approach is not workind, since the last series overwrites existing  series entries
-            # series = []
-            # for key in seriesList:
-            #     # ignore meta properties, since no series
-            #     if ( key != 'type' and key != 'time'):
-            #         series.append(key.replace(".", "_"))
-            # seriesListCleaned['type'] = document['type']
-            # seriesListCleaned['series'] = series
-            # print("New seriesList :", seriesListCleaned)
+            resultMeasurement = self.collectionMeasurement.insert_one(document)
 
-            for key in seriesList:
-                # ignore meta properties, since no series
-                if ( key != 'type' and key != 'time'):
-                    seriesListCleaned[key.replace(".", "_")] = ""
+            # update series list
+            seriesList = flatten(document['payload'], '_')
+            seriesListCleaned = {}
             seriesListCleaned['type'] = document['type']
             seriesListCleaned['datetime'] = time
-            # print("New seriesList :", seriesListCleaned)
-
-            result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
-
-            # result1 = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
-            print("Saved in Mongo document, series:", result.inserted_id, result1.modified_count)
-            if not result.acknowledged:
+            for key in seriesList:
+                # ignore meta properties, since not relevant for series
+                if ( key != 'type' and key != 'time'):
+                    # replace existing '.' for '-' to avoid being recognized as objects
+                    seriesListCleaned[key.replace(".", "_")] = ""
+            resultSeries = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
+            
+            print("Saved document in mongo: measurement/series:", resultMeasurement.inserted_id, resultSeries.modified_count)
+            if not resultMeasurement.acknowledged:
                 # Enqueue message if it was not saved properly
                 self._enqueue(msg)
         except Exception as ex:
@@ -121,13 +118,3 @@ class Mongo(object):
         th = threading.Thread(target=self.__store_thread_f, args=(msg,))
         th.daemon = True
         th.start()
-
-    def save(self, msg: mqtt.MQTTMessage):
-        # print("Saving")
-        if msg.retain:
-            print("Skipping retained message")
-            return
-        if self.connected():
-            self._store(msg)
-        else:
-            self._enqueue(msg)
