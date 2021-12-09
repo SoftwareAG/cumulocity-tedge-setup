@@ -105,9 +105,15 @@ class Mongo(object):
                 if ( key != 'type' and key != 'time'):
                     # replace existing '.' for '-' to avoid being recognized as objects
                     seriesListCleaned[key.replace(".", "_")] = ""
-            resultSeries = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)
+
+            for key in seriesList:
+                # ignore meta properties, since not relevant for series
+                if ( key != 'type' and key != 'time'):
+                    # replace existing '.' for '-' to avoid being recognized as objects
+                    seriesListCleaned[key.replace(".", "_")] = ""
             
-            print("Saved document in mongo: measurement/series:", resultMeasurement.inserted_id, resultSeries.modified_count)
+            resultSeries = self.collectionSeries.update_one(  { 'type': document['type']}, { "$set": seriesListCleaned } , True)           
+            print("Saved  measurementId/seriesId/modifiedCount:", resultMeasurement.inserted_id,  resultSeries.modified_count)
             if not resultMeasurement.acknowledged:
                 # Enqueue message if it was not saved properly
                 self._enqueue(msg)
