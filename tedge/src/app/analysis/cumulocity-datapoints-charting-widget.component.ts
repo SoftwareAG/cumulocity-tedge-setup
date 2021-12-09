@@ -186,55 +186,57 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
       _chartData.splice(0, 1);
     }
 
-    let flat = flatten(event.payload)
-    //console.log("Log initial ", flat, event);
-    for (let key in flat) {
-      //console.log("Testing key", this.chartDataPointList[key], key);
-      if (key.endsWith('value')) {
-        // test if key is already in chartDataPoint
-        // add new series
-        if (this.chartDataPointList[key] === undefined) {
-          _chartData.push({ data: [], label: key, fill: false })
-          let nextColor = generateNextColor(this.chartDataPointList.index)
-          this.chartColors.push({
-            borderColor: nextColor,
-            pointBackgroundColor: nextColor
-          })
-          this.chartDataPointList[key] = this.chartDataPointList.index
-          //console.log("Adding key", this.chartDataPointList[key], key);
-          ++this.chartDataPointList.index
+    // test for event with payload
+    if(event.payload) {
+      let flat = flatten(event.payload)
+      //console.log("Log initial ", flat, event);
+      for (let key in flat) {
+        //console.log("Testing key", this.chartDataPointList[key], key);
+        if (key.endsWith('value')) {
+          // test if key is already in chartDataPoint
+          // add new series
+          if (this.chartDataPointList[key] === undefined) {
+            _chartData.push({ data: [], label: key, fill: false })
+            let nextColor = generateNextColor(this.chartDataPointList.index)
+            this.chartColors.push({
+              borderColor: nextColor,
+              pointBackgroundColor: nextColor
+            })
+            this.chartDataPointList[key] = this.chartDataPointList.index
+            //console.log("Adding key", this.chartDataPointList[key], key);
+            ++this.chartDataPointList.index
+          }
+          let dp: ChartPoint = {
+            x: moment.parseZone(event.datetime),
+            y: flat[key]
+          };
+          //console.log("New DataPoint",dp );
+          (_chartData[this.chartDataPointList[key]].data as ChartPoint[]).push(dp)
+        } else {
+          //console.log("Ignore key", this.chartDataPointList[key], key);
         }
-        let dp: ChartPoint = {
-          x: moment.parseZone(event.datetime),
-          y: flat[key]
-        };
-        //console.log("New DataPoint",dp );
-        (_chartData[this.chartDataPointList[key]].data as ChartPoint[]).push(dp)
-      } else {
-        //console.log("Ignore key", this.chartDataPointList[key], key);
       }
-    }
-    _chartLabels.push(this.getLabel(event));
+      _chartLabels.push(this.getLabel(event));
 
-    // remove outdated data and labels
-    let { from, to } = this.getDateRange();
-    _chartData.forEach(cd => {
-      //console.log("Comparing label", cd.label, cd.data.length, moment(cd.data['x']).toISOString(), moment(from).toISOString())
-      while (moment(cd.data[0]['x']).isBefore(moment(from))) {
-        //console.log("Removing label", cd.data[0])
-        cd.data.shift();
+      // remove outdated data and labels
+      let { from, to } = this.getDateRange();
+      _chartData.forEach(cd => {
+        //console.log("Comparing label", cd.label, cd.data.length, moment(cd.data['x']).toISOString(), moment(from).toISOString())
+        while (moment(cd.data[0]['x']).isBefore(moment(from))) {
+          //console.log("Removing label", cd.data[0])
+          cd.data.shift();
+        }
+      })
+
+      while (moment(_chartLabels[0]).isBefore(moment(from))) {
+        _chartLabels.shift();
       }
-    }
-    )
 
-    while (moment(_chartLabels[0]).isBefore(moment(from))) {
-      _chartLabels.shift();
+      //console.log("L", _chartData.length)
+      this.chartData = _chartData
+      this.chartLabels = _chartLabels
+      this.update()
     }
-
-    //console.log("L", _chartData.length)
-    this.chartData = _chartData
-    this.chartLabels = _chartLabels
-    this.update()
   }
 
   private getLabel(event: RawMeasurment): string {
