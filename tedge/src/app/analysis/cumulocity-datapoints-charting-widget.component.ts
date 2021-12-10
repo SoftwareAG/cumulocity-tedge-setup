@@ -87,16 +87,16 @@
            time: {
              unit: 'second',
              display: true,
-            //  displayFormats: {
-            //    second: 'D MMM, h:mm a',
-            //    minute: 'D MMM, h:mm a',
-            //    hour: 'D MMM, h:mm a',
-            //    day: 'D MMM, h:mm a',
-            //    week: 'll',
-            //    month: 'll',
-            //    quarter: 'll',
-            //    year: 'll'
-            //  }
+             displayFormats: {
+               second: 'h:mm:ss a',
+               minute: 'h:mm a',
+               hour: 'hA',
+               day: 'MMM D',
+               week: '"week ll',
+               month: 'MMM YYYY',
+               quarter: '[Q]Q - YYYY',
+               year: 'YYYY'
+             }
            },
            ticks: {
              autoSkip: true,
@@ -162,7 +162,16 @@
                  unit: rangeUnits[changedProp.currentValue.rangeUnit].unit,
                  //unit: 'second',
                  display: true,
-                 displayFormats: rangeUnits[changedProp.currentValue.rangeUnit].format
+                 displayFormats: {
+                  second: 'h:mm:ss a',
+                  minute: 'h:mm a',
+                  hour: 'hA',
+                  day: 'MMM D',
+                  week: '"week ll',
+                  month: 'MMM YYYY',
+                  quarter: '[Q]Q - YYYY',
+                  year: 'YYYY'
+                }
                },
                ticks: {
                  autoSkip: true,

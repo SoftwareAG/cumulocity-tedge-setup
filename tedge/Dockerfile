@@ -24,5 +24,5 @@ WORKDIR /app/tedge
 RUN npm install -g @angular/cli && npm install
 RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
 
-ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"]
-#ENTRYPOINT ["tail", "-f", "/dev/null"]
+# ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
