@@ -66,6 +66,7 @@ export interface MeasurmentType {
 
 export interface RawListItem {
   id: any;
+  unit: string
   text: any;
   format?: string;
   isGroup?: boolean;

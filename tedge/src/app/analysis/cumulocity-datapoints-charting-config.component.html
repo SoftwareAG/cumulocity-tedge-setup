@@ -8,7 +8,7 @@
                     <input class="form-control" [(ngModel)]="config.diagramName" placeholder="diagram name" required />
                     <label translate>Range Unit Count</label>
                     <input class="form-control" [(ngModel)]="config.rangeUnitCount"
-                        placeholder="number of range units, e.g. number of seconds, minutes, ..." required />
+                        placeholder="number of range units, e.g. number of seconds, minutes, ..." type="number" required />
                     <label translate>Range Unit</label>
                     <select class="form-control" name="rangeSelector" [(ngModel)]="config.rangeUnit"
                         (ngModelChange)="updateConfig()">
@@ -22,9 +22,9 @@
 
                     <div [hidden]="config.fitAxis">
                         <label translate>Lower range y-axis</label>
-                        <input class="form-control" [(ngModel)]="config.rangeLow" placeholder="restrict y axis to interval, here lower border" required />
+                        <input class="form-control" [(ngModel)]="config.rangeLow" placeholder="restrict y axis to interval, here lower border" type="number" required  />
                         <label translate>Upper range y-axis</label>
-                        <input class="form-control" [(ngModel)]="config.rangeHigh" placeholder="restrict y axis to interval, here upper border" required />
+                        <input class="form-control" [(ngModel)]="config.rangeHigh" placeholder="restrict y axis to interval, here upper border" type="number" required  />
                     </div>
                 </div>
             </div>

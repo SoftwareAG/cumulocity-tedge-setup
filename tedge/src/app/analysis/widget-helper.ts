@@ -28,16 +28,15 @@ export const generateNextColor = function (index) {
 
 
 export const rangeUnits: RawListItem[] = [
-    // { isGroup:false , id: -1, text: "Dates" },
-    { id: 0, text: "measurements", format: "h:mm:ss.SSS a" },
-    { id: 1, text: "second", format: "h:mm:ss a" },
-    { id: 60, text: "minute", format: "h:mm a" },
-    { id: 3600, text: "hour", format: "hA" },
-    { id: 86400, text: "day", format: "MMM D" },
-    { id: 604800, text: "week", format: "week ll" },
-    { id: 2592000, text: "month", format: "MMM YYYY" },
-    { id: 7776000, text: "quarter", format: "[Q]Q - YYYY" },
-    { id: 31536000, text: "year", format: "YYYY" },
+  { id: 0, unit: "second", text: "measurements", format: "h:mm:ss.SSS a" },
+  { id: 1, unit: "second", text: "second", format: "h:mm:ss a" },
+  { id: 60, unit: "minute", text: "minute", format: "h:mm a" },
+  { id: 3600, unit: "hour", text: "hour", format: "hA" },
+  { id: 86400, unit: "day", text: "day", format: "MMM D" },
+  { id: 604800, unit: "week", text: "week",format: "week ll" },
+  { id: 2592000, unit: "month", text: "month", format: "MMM YYYY" },
+  { id: 7776000, unit: "quarter", text: "quarter",format: "[Q]Q - YYYY" },
+  { id: 31536000, unit: "year", text: "year", format: "YYYY" },
 ];
 
 export const flatten = function(data) {

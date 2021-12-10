@@ -19,6 +19,7 @@
     "@angular/forms": "~8.2.14",
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
+    "@angular/router": "~8.2.14",
     "@c8y/ngx-components": "1010.0.17",
     "@c8y/style": "1010.0.17",
     "@ng-select/ng-select": "^3.7.3",

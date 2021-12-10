@@ -110,7 +110,7 @@ export class EdgeService {
   }
 
   setAnalyticsConfiguration(config): Promise<any> {
-    console.log("Configuration to be stored:", config)
+    //console.log("Configuration to be stored:", config)
     return this.http
       .post<any>(ANALYTICS_CONFIGURATION_URL, config)
       .toPromise()
