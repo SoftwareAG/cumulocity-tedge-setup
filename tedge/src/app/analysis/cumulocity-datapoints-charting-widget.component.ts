@@ -73,6 +73,7 @@
        }
      },
      responsive: true,
+     maintainAspectRatio: false,
      scales: {
        yAxes: [
          {
@@ -148,6 +149,8 @@
        console.log("Changed config", changedProp, propName, parseInt(changedProp.currentValue.rangeLow), fitAxis)
        if (propName == "config") {
          let options  = {
+           responsive: true,
+           maintainAspectRatio: true,
            scales: {
              yAxes: [
                {
@@ -160,14 +163,13 @@
                type: 'time',
                time: {
                  unit: rangeUnits[changedProp.currentValue.rangeUnit].unit,
-                 //unit: 'second',
                  display: true,
-                 displayFormats: {
+                displayFormats: {
                   second: 'h:mm:ss a',
                   minute: 'h:mm a',
                   hour: 'hA',
                   day: 'MMM D',
-                  week: '"week ll',
+                  week: 'week ll',
                   month: 'MMM YYYY',
                   quarter: '[Q]Q - YYYY',
                   year: 'YYYY'
@@ -175,7 +177,11 @@
                },
                ticks: {
                  autoSkip: true,
-                 maxTicksLimit: 20
+                 maxTicksLimit: 20,
+                //  callback: function(value, index, labels)  {
+                //   // Hide the label of every 2nd dataset
+                //   return index % 2 === 0 ? labels[index].value : '';
+                // },          
                }
              }
              ]
@@ -192,12 +198,11 @@
            ...options
  
          } as ChartOptions
- 
+         console.log("Display", this.chartOptions.scales.xAxes);
          //console.log("Now can change config", changedProp.currentValue.rangeLow, changedProp.currentValue.rangeHigh)
        }
      }
-   }
- 
+   } 
    private pushEventToChartData(event: RawMeasurment): void {
      const _chartData = this.chartData;
      const _chartLabels = this.chartLabels
@@ -217,7 +222,7 @@
            // test if key is already in chartDataPoint
            // add new series
            if (this.chartDataPointList[key] === undefined) {
-             _chartData.push({ data: [], label: key, fill: false })
+             _chartData.push({ data: [], label: key.replace(".value",""), fill: false })
              let nextColor = generateNextColor(this.chartDataPointList.index)
              this.chartColors.push({
                borderColor: nextColor,

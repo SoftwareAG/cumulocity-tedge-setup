@@ -32,14 +32,15 @@
   </div>
   <div class="col-sm-6">
     <div class="card">
-      <table>
-        <tbody *ngIf="cloudDeviceDetails">
-          <tr *ngFor="let item of (cloudDeviceDetails | keyvalue); index as i">
-            <td scope="row" style="width: 20%"><span class="ng-binding">{{ item.key | titlecase}}:</span></td>
-            <td scope="row" style="width: 80%"><span class="ng-binding">{{item.value}}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <!--         <c8y-list-group *ngIf="cloudDeviceDetails">
+          <c8y-li *ngFor="let item of (cloudDeviceDetails | keyvalue); index as i" #li>
+            <td style="width: 20%"><span >{{ item.key | titlecase}}:</span></td>
+            <td style="width: 80%"><span >{{item.value}}</span></td>
+          </c8y-li>
+        </c8y-list-group> -->
+      <c8y-data-grid [title]="'Devcie Details' | translate" [columns]="columns" [rows]="rows$ | async"
+        [pagination]="pagination" [actionControls]="actionControls">
+      </c8y-data-grid>
     </div>
   </div>
 </div>

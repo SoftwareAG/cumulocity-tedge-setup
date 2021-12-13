@@ -30,8 +30,8 @@ export const generateNextColor = function (index) {
 export const rangeUnits: RawListItem[] = [
   { id: 0, unit: "second", text: "measurements", format: "h:mm:ss.SSS a" },
   { id: 1, unit: "second", text: "second", format: "h:mm:ss a" },
-  { id: 60, unit: "minute", text: "minute", format: "h:mm a" },
-  { id: 3600, unit: "hour", text: "hour", format: "hA" },
+  { id: 60, unit: "second", text: "minute", format: "h:mm a" },
+  { id: 3600, unit: "minute", text: "hour", format: "hA" },
   { id: 86400, unit: "day", text: "day", format: "MMM D" },
   { id: 604800, unit: "week", text: "week",format: "week ll" },
   { id: 2592000, unit: "month", text: "month", format: "MMM YYYY" },
