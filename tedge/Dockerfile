@@ -13,10 +13,10 @@ RUN curl -fsSL https://raw.githubusercontent.com/thin-edge/thin-edge.io/main/get
 RUN cp /etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
 
 # build angular app
-COPY ./ /app/tedge
 WORKDIR /app/tedge
 RUN npm install -g @angular/cli && npm install
+COPY ./ /app/tedge
 RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
 
 ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"]
-# ENTRYPOINT ["tail", "-f", "/dev/null"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]

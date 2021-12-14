@@ -2,36 +2,43 @@
   {{ 'Analytics'| translate }}
 </c8y-title>
 <div class="card-group">
-    <div class="col-sm-12">
-      <div class="card">
-        <div class="card-header">{{ config.diagramName}} (spanning {{config.rangeUnitCount}} * {{rangeUnits[config.rangeUnit].text}})</div>
-        <div class="card-block my-card-body">
-            <cumulocity-datapoints-charting-widget
-            [config]="config">
-          </cumulocity-datapoints-charting-widget>
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header">
+        {{ config.diagramName}}
+        <div class="col-lg-2">
+          <select class="form-control" name="spanSelector" [(ngModel)]="displaySpan">
+            <option *ngFor="let span of spanList" [value]="span.spanInSeconds">
+              <span *ngIf="span.spanInSeconds == 0">
+                {{span.text}} spanning {{config.rangeUnitCount}} * {{rangeUnits[config.rangeUnit].text}}
+              </span>
+              <span *ngIf="span.spanInSeconds != 0">
+                {{span.text}}
+              </span>
+            </option>
+          </select>
         </div>
       </div>
+      <div class="card-block my-card-body">
+        <cumulocity-datapoints-charting-widget [config]="config" [displaySpan]="displaySpan">
+        </cumulocity-datapoints-charting-widget>
+      </div>
     </div>
+  </div>
 </div>
 
 <c8y-action-bar-item [placement]="'right'">
-    <button
-      class="btn btn-link"
-      title="{{ 'Configure diagram' | translate }}"
-      (click) = "showDialog = !showDialog">
-      <i class="fa fa-cog"></i>&nbsp;<span translate>Configure diagram</span>
-    </button>
+  <button class="btn btn-link" title="{{ 'Configure diagram' | translate }}" (click)="showDialog = !showDialog">
+    <i class="fa fa-cog"></i>&nbsp;<span translate>Configure diagram</span>
+  </button>
 </c8y-action-bar-item>
 
 
 
 <div [ngClass]="{ drawerOpen: showDialog }">
   <div class="bottom-drawer">
-    <cumulocity-datapoints-charting-config (onChangeConfig)="configurationChanged($event)" (onClose)="showDialog = !showDialog"
-      *ngIf="showDialog"
-      class="d-contents"
-      [config]="config"
-    >
+    <cumulocity-datapoints-charting-config (onChangeConfig)="configurationChanged($event)"
+      (onClose)="showDialog = !showDialog" *ngIf="showDialog" class="d-contents" [config]="config">
     </cumulocity-datapoints-charting-config>
   </div>
 </div>

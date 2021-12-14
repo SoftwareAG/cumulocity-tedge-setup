@@ -1,5 +1,5 @@
 import { interpolateInferno, interpolateRainbow } from "d3-scale-chromatic"
-import { RawListItem } from "../property.model";
+import { RawListItem, SpanListItem } from "../property.model";
 
 const colorScale = interpolateRainbow;
 const colorRangeInfo = {
@@ -37,6 +37,14 @@ export const rangeUnits: RawListItem[] = [
   { id: 2592000, unit: "month", text: "month", format: "MMM YYYY" },
   { id: 7776000, unit: "quarter", text: "quarter",format: "[Q]Q - YYYY" },
   { id: 31536000, unit: "year", text: "year", format: "YYYY" },
+];
+
+
+export const spanList: SpanListItem[] = [
+  { text: "Realtime", spanInSeconds: 0, default: true},
+  { text: "Last minute", spanInSeconds: 60, default: false},
+  { text: "Last 5 minutes", spanInSeconds: 300, default: false},
+  { text: "Last 30 minutes", spanInSeconds: 1800, default: false},
 ];
 
 export const flatten = function(data) {

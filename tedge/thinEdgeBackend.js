@@ -1,16 +1,17 @@
 // spawn
-const { spawn } = require("child_process");
+const { spawn } = require('child_process');
 const events = require('events');
-const { TaskQueue } = require("./taskqueue");
+const { TaskQueue } = require('./taskqueue');
 const fs = require('fs');
 // emmitter to signal completion of current task
 const taskQueue = new TaskQueue()
-const propertiesToJSON = require("properties-to-json");
+const propertiesToJSON = require('properties-to-json');
 const MongoClient = require('mongodb').MongoClient;
+
 const MONGO_URL = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`;
-const MONGO_MEASUEMENT_COLLECTION = "measurement"
-const MONGO_SERIES_COLLECTION = "serie"
-const MONGO_DB = "localDB"
+const MONGO_MEASUEMENT_COLLECTION = 'measurement'
+const MONGO_SERIES_COLLECTION = 'serie'
+const MONGO_DB = 'localDB'
 const ANALYTICS_CONFIG ='/etc/tedge/analyticsConfig.json'
 
 class ThinEdgeBackend {
@@ -72,43 +73,15 @@ class ThinEdgeBackend {
         }
     }
 
-    // connect2Mongo() {
-    //     let localSocket = this.socket;
-    //     MongoClient.connect(MONGO_URL, function(err, client) {
-    //         if (err) throw err;
-    //         let dbo = client.db(MONGO_DB);
-    //         let tedgeCollection = dbo.collection(MONGO_COLLECTION) 
-                     
-    //         let changeStream = null;
-
-    //         // watch measurement collection for changes
-    //         localSocket.on('new-measurement', function (message) {
-    //             console.log(`New measurement cmd: ${message}`);
-    //             if (message == 'start')  {
-    //                 changeStream = tedgeCollection.watch()
-    //                 changeStream.on("change",function(change){
-    //                     // console.log("changed", JSON.stringify(change.fullDocument));
-    //                     // let obj = JSON.parse(change.fullDocument.payload)
-    //                     // change.fullDocument.payload = obj
-    //                     // console.log("changed", JSON.stringify(change.fullDocument));
-    //                     localSocket.emit('new-measurement', JSON.stringify(change.fullDocument))
-    //                 });
-    //             } else if (message == 'stop')  {
-    //                 if ( changeStream) {
-    //                 changeStream.close()
-    //                 }
-    //             } 
-    //         });
-    //       });
-    // }
-
     watchMeasurementColletion() {
-        let changeStream = null;
+        let changeStream = undefined;
         let localSocket = this.socket;
         // watch measurement collection for changes
         localSocket.on('new-measurement', function (message) {
             console.log(`New measurement cmd: ${message}`);
-            if (message == 'start')  {
+            // only start new changed stream if no old noe exists
+            if (message == 'start' && !changeStream)  {
+                console.log(`Really starting measurement cmd: ${message}`);
                 changeStream = ThinEdgeBackend.measurementCollection.watch()
                 changeStream.on("change",function(change){
                     // console.log("changed", JSON.stringify(change.fullDocument));
@@ -119,9 +92,28 @@ class ThinEdgeBackend {
                 });
             } else if (message == 'stop')  {
                 if ( changeStream) {
-                changeStream.close()
+                    console.log(`Stop message stream: ${message}`);
+                    changeStream.close()
+                    changeStream = undefined;
                 }
             } 
+        });
+    }
+
+    static getLastMeasurements( req, res ) {
+        let displaySpan = req.query.displaySpan;
+        console.log("Historic data", displaySpan);
+        let query = {
+            datetime: { // 18 minutes ago (from now)
+                $gt: new Date(Date.now() - 1000 * parseInt(displaySpan))
+            }
+        }
+        ThinEdgeBackend.measurementCollection.find(query).sort({datetime: 1}).toArray(function(err, items) {
+            if (err) {
+                console.log ("Can't retrieve measurements!")
+                throw err;
+            }
+            res.status(200).json(items);
         });
     }
 

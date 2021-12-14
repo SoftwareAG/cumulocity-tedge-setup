@@ -12,6 +12,7 @@ const EDGE_CONFIGURATION_URL = '/api/edgeConfiguration'
 const ANALYTICS_CONFIGURATION_URL = '/api/analyticsConfiguration'
 const PROXY_CONFIG_URL = '/config';
 const DOWNLOADCERTIFICATE_URL = "/api/certificate";
+const MEASUREMENT_URL = "/api/measurement";
 const STATUS_URL = "/api/status";
 const SERIES_URL =  "/api/series";
 
@@ -19,9 +20,6 @@ const SERIES_URL =  "/api/series";
   providedIn: 'root'
 })
 export class EdgeService {
-
-
-
   private fetchClient: FetchClient;
 
   private edgeConfiguration: any = {}
@@ -40,6 +38,30 @@ export class EdgeService {
     Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
     return config;
   } */
+
+  getLastMeasurements(displaySpan: number): Promise<RawMeasurment[]> {
+    const promise = new Promise<any[]>((resolve, reject) => {
+      const params = new HttpParams({
+        fromObject: {
+          displaySpan: displaySpan.toString(),
+        }
+      });
+      this.http
+        .get<RawMeasurment[]>(MEASUREMENT_URL, { params: params} )
+        .toPromise()
+        .then((res: any[]) => {
+          // Success
+          resolve(res);
+        },
+          err => {
+            // Error
+            reject(err);
+          }
+        );
+    });
+    return promise;
+  }
+
 
   sendCMDToEdge(msg) {
     this.socket.emit('cmd-in', msg);

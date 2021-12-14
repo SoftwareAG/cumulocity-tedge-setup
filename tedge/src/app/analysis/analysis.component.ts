@@ -1,8 +1,8 @@
 import { Component, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { EdgeService } from '../edge.service';
-import { RawListItem } from '../property.model';
-import { rangeUnits } from './widget-helper';
+import { RawListItem, SpanListItem } from '../property.model';
+import { rangeUnits, spanList } from './widget-helper';
 
 @Component({
   selector: 'app-analysis',
@@ -15,11 +15,13 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   public onChangeConfig: EventEmitter<any> = new EventEmitter();
 
   rangeUnits: RawListItem[] = rangeUnits
+  spanList: SpanListItem[] = spanList;
   config: any = {
     rangeUnit: 2,
     rangeUnitCount : 30,
     diagramName: 'Analytics'
   }
+  displaySpan: number = 0;
 
   constructor(private edgeService: EdgeService) { }
     

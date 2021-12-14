@@ -21,22 +21,6 @@ services:
   # 3. enable entrypoint ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"] in tedge/Dockerfile
   #  - ./:/app/
     - ./tedge/etc/tedge:/etc/tedge
-
-  # tedge:
-  #  image: eclipse-mosquitto
-  #  hostname: tedge
-  #  container_name: eclipse-mosquitto
-  #  expose:
-  #     - "1883"
-  #     - "9001"
-  #  ports:
-  #     - "1883:1883"
-  #     - "9001:9001"
-  #  volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
-  #     - ./mosquitto/log/:/mosquitto/mosquitto.log
-
   mqtt_collector:
     build: ./MQTT_Collector
     hostname: mqtt_collector
@@ -69,8 +53,6 @@ services:
         "--dbpath",
         "/data/db"
       ]
-    # entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rsmongo", "--journal", "--dbpath", "/data/db" ]
-    # entrypoint: ["tail", "-f", "/dev/null"]
     volumes:
       - ./mongo/data1/db:/data/db # This is where your volume will persist. e.g. VOLUME-DIR = ./volumes/mongodb
       - ./mongo/data1/configdb:/data/configdb
