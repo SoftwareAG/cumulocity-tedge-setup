@@ -62,6 +62,29 @@ export class EdgeService {
     return promise;
   }
 
+  getMeasurements(dateFrom: Date, dateTo: Date): Promise<RawMeasurment[]> {
+    const promise = new Promise<any[]>((resolve, reject) => {
+      const params = new HttpParams({
+        fromObject: {
+          dateFrom: dateFrom.toString(),
+          dateTo: dateTo.toString(),
+        }
+      });
+      this.http
+        .get<RawMeasurment[]>(MEASUREMENT_URL, { params: params} )
+        .toPromise()
+        .then((res: any[]) => {
+          // Success
+          resolve(res);
+        },
+          err => {
+            // Error
+            reject(err);
+          }
+        );
+    });
+    return promise;
+  }
 
   sendCMDToEdge(msg) {
     this.socket.emit('cmd-in', msg);
@@ -72,7 +95,7 @@ export class EdgeService {
     return this.socket.fromEvent('cmd-progress');
   }
 
-  getMeasurements(): Observable<RawMeasurment> {
+  getRealtimeMeasurements(): Observable<RawMeasurment> {
     this.socket.emit('new-measurement', 'start');
     const obs = this.socket.fromEvent <string>('new-measurement').pipe( map ( m => JSON.parse(m)))
     return obs;

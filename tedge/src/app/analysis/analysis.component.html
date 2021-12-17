@@ -6,11 +6,11 @@
     <div class="card">
       <div class="card-header">
         {{ config.diagramName}}
-        <div class="col-lg-2">
+        <div class="form-group-sm" style="margin-left: 20px;">
           <select class="form-control" name="spanSelector" [(ngModel)]="displaySpan">
             <option *ngFor="let span of spanList" [value]="span.spanInSeconds">
               <span *ngIf="span.spanInSeconds == 0">
-                {{span.text}} spanning {{config.rangeUnitCount}} * {{rangeUnits[config.rangeUnit].text}}
+                {{span.text}} {{config.rangeUnitCount}} * {{rangeUnits[config.rangeUnit].text}}
               </span>
               <span *ngIf="span.spanInSeconds != 0">
                 {{span.text}}
@@ -18,9 +18,27 @@
             </option>
           </select>
         </div>
+        <div class="datetime-picker" *ngIf="displaySpan == -1" style="margin-left: 20px;">
+          <label class="small m-r-4">From</label>
+          <div class="form-group-sm datepicker">
+            <input type="text" placeholder="Range" class="form-control" bsDatepicker [(ngModel)]="dateFrom"
+              [bsConfig]="bsConfig" (bsValueChange)="updateFrom()">
+          </div>
+          <timepicker class="form-group-sm" [(ngModel)]="dateFrom" [showMeridian]="showMeridian" [showSpinners]="showSpinners"
+            (bsValueChange)="updateFrom()"></timepicker>
+        </div>
+        <div class="datetime-picker" *ngIf="displaySpan == -1" style="margin-left: 20px;">
+          <label class="small m-r-4">To</label>
+          <div class="form-group-sm datepicker">
+            <input type="text" placeholder="Range" class="form-control" [minDate]="dateFrom" bsDatepicker [(ngModel)]="dateTo"
+              [bsConfig]="bsConfig" (bsValueChange)="updateTo()">
+          </div>
+          <timepicker class="form-group-sm" [(ngModel)]="dateTo" [showMeridian]="showMeridian" [showSpinners]="showSpinners"
+            (bsValueChange)="updateTo()"></timepicker>
+        </div>
       </div>
       <div class="card-block my-card-body">
-        <cumulocity-datapoints-charting-widget [config]="config" [displaySpan]="displaySpan">
+        <cumulocity-datapoints-charting-widget [config]="config" [displaySpan]="displaySpan" [dateFrom]="dateFrom" [dateTo]="dateTo">
         </cumulocity-datapoints-charting-widget>
       </div>
     </div>

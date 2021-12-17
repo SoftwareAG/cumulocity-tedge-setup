@@ -38,5 +38,4 @@ export interface RawListItem {
 export interface SpanListItem {
   text: string;
   spanInSeconds: number;
-  default: boolean;
 }

@@ -78,7 +78,7 @@ app.get("/api/edgeConfiguration", function (req, res) {
 *   GET: getLastMeasurements 
 */
 app.get("/api/measurement", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getLastMeasurements(req,res)
+    thinEdgeBackend.ThinEdgeBackend.getMeasurements(req,res)
 });
 
 /*  "/api/status"

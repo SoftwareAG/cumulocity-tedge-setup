@@ -13,6 +13,7 @@ const MONGO_MEASUEMENT_COLLECTION = 'measurement'
 const MONGO_SERIES_COLLECTION = 'serie'
 const MONGO_DB = 'localDB'
 const ANALYTICS_CONFIG ='/etc/tedge/analyticsConfig.json'
+const MAX_MEASUREMENT = 2000;
 
 class ThinEdgeBackend {
 
@@ -100,21 +101,39 @@ class ThinEdgeBackend {
         });
     }
 
-    static getLastMeasurements( req, res ) {
+    static getMeasurements( req, res ) {
         let displaySpan = req.query.displaySpan;
-        console.log("Historic data", displaySpan);
-        let query = {
-            datetime: { // 18 minutes ago (from now)
-                $gt: new Date(Date.now() - 1000 * parseInt(displaySpan))
+        let dateFrom = req.query.dateFrom;
+        let dateTo = req.query.dateTo;
+        console.log("Measurement query:", displaySpan, dateFrom, dateTo);
+        if (displaySpan) {
+            let query = {
+                datetime: { // 18 minutes ago (from now)
+                    $gt: new Date(Date.now() - 1000 * parseInt(displaySpan))
+                }
             }
+            ThinEdgeBackend.measurementCollection.find(query).limit(MAX_MEASUREMENT).sort({datetime: 1}).toArray(function(err, items) {
+                if (err) {
+                    console.log ("Can't retrieve measurements!")
+                    throw err;
+                }
+                res.status(200).json(items);
+            });
+        } else {
+            let query = {
+                datetime: { // 18 minutes ago (from now)
+                    $gt: new Date(dateFrom),
+                    $lt: new Date(dateTo)
+                }
+            }
+            ThinEdgeBackend.measurementCollection.find(query).limit(MAX_MEASUREMENT).sort({datetime: 1}).toArray(function(err, items) {
+                if (err) {
+                    console.log ("Can't retrieve measurements!")
+                    throw err;
+                }
+                res.status(200).json(items);
+            });
         }
-        ThinEdgeBackend.measurementCollection.find(query).sort({datetime: 1}).toArray(function(err, items) {
-            if (err) {
-                console.log ("Can't retrieve measurements!")
-                throw err;
-            }
-            res.status(200).json(items);
-        });
     }
 
     static connect2Mongo() {

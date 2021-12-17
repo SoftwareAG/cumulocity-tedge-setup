@@ -41,10 +41,11 @@ export const rangeUnits: RawListItem[] = [
 
 
 export const spanList: SpanListItem[] = [
-  { text: "Realtime", spanInSeconds: 0, default: true},
-  { text: "Last minute", spanInSeconds: 60, default: false},
-  { text: "Last 5 minutes", spanInSeconds: 300, default: false},
-  { text: "Last 30 minutes", spanInSeconds: 1800, default: false},
+  { text: "Realtime", spanInSeconds: 0},
+  { text: "Last minute", spanInSeconds: 60},
+  { text: "Last 5 minutes", spanInSeconds: 300},
+  { text: "Last 30 minutes", spanInSeconds: 1800},
+  { text: "Custom", spanInSeconds: -1},
 ];
 
 export const flatten = function(data) {

@@ -7,7 +7,8 @@ import { rangeUnits, spanList } from './widget-helper';
 @Component({
   selector: 'app-analysis',
   templateUrl: './analysis.component.html',
-  styleUrls: ['./analysis.component.css']
+  styleUrls: ['./analysis.component.less']
+//  styleUrls: ['../../../node_modules/ngx-bootstrap/datepicker/bs-datepicker.css']
 })
 export class AnalysisComponent implements OnInit, OnDestroy {
 
@@ -22,6 +23,11 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     diagramName: 'Analytics'
   }
   displaySpan: number = 0;
+  dateFrom: Date = new Date();
+  dateTo: Date = new Date();
+  bsConfig = {containerClass: "theme-orange", dateInputFormat: 'DD-MM-YYYY'};
+  showMeridian = false;
+  showSpinners = false;
 
   constructor(private edgeService: EdgeService) { }
     
@@ -33,6 +39,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       ...c
     }
   }
+
   configurationChanged(event) {
     console.log("Configuration changed:", event)
     this.edgeService.setAnalyticsConfiguration(event).then( c => {
@@ -41,6 +48,13 @@ export class AnalysisComponent implements OnInit, OnDestroy {
       
     })
     this.showDialog = false;
+  }
+
+  updateFrom() {
+    console.log("Date from:",this.dateFrom)
+  }
+  updateTo() {
+    console.log("Date to:",this.dateFrom)
   }
   ngOnDestroy(): void {  }
 }

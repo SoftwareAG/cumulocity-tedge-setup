@@ -44,6 +44,8 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
 
   @Input() config: any;
   @Input() displaySpan: number;   // default of diagram is always realtime
+  @Input() dateFrom: Date;
+  @Input() dateTo: Date;
   chartType = "line";
   chartData: ChartDataSets[] = [];
   chartColors: Color[] = [
@@ -137,7 +139,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
       this.pushEventToChartData(t)
     });
 
-    this.measurements$ = this.edgeService.getMeasurements()
+    this.measurements$ = this.edgeService.getRealtimeMeasurements()
     this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: RawMeasurment) => {
       //console.log("New Mongo Measurement", m)
       this.pushEventToChartData(m)
@@ -201,6 +203,15 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
           this.displaySpan = parseInt(changedProp.currentValue)
           console.log("Changed displaySpan", this.displaySpan);
           this.updateDisplayMode();
+      } else if (propName == "dateFrom") {
+        this.dateFrom = changedProp.currentValue
+        console.log("Changed dateFrom", this.dateFrom);
+        // only update if to range is set
+        this.updateDisplayMode();
+      } else if (propName == "dateTo") {
+        this.dateTo = changedProp.currentValue
+        console.log("Changed dateTo", this.dateTo);
+        this.updateDisplayMode();
       }
     }
   }
@@ -307,7 +318,11 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
     this.resetChart();
 
     // if historical data to be displayed
-    if (this.displaySpan != 0) {
+    if (this.displaySpan == -1) {
+      let ob = await this.edgeService.getMeasurements(this.dateFrom, this.dateTo);
+      ob.forEach( m => this.pushEventToChartData(m) )
+      // console.log("New history", ob)
+    } else if (this.displaySpan > 0) {
       let ob = await this.edgeService.getLastMeasurements(this.displaySpan);
       ob.forEach( m => this.pushEventToChartData(m) )
       // console.log("New history", ob)

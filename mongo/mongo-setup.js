@@ -34,6 +34,5 @@ options = {
     expireAfterSeconds: parseInt(ttl)
 }
 print("Setting TTL for measurements to:", ttl)
-//db = db.getSiblingDB('localDB')
 db.measurement.createIndex(keys, options);
 db.createCollection('serie')
