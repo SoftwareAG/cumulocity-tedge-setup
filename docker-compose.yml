@@ -15,11 +15,11 @@ services:
       - MONGO_PORT=27017
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-  # Test version: map local directory and build angular locally (three thre changes are required in total)  
+  # Test version: map local directory and build angular locally (three changes are required in total)  
   # 1. map locally
   # 2. run in tedge cmd: npm run build to build outside of the container, the result is then mapped with the following volume mapping:  ./:/app/
   # 3. enable entrypoint ENTRYPOINT ["/bin/bash", "/app/tedge/start.sh"] in tedge/Dockerfile
-  #  - ./:/app/
+  # - ./:/app/
     - ./tedge/etc/tedge:/etc/tedge
   mqtt_collector:
     build: ./MQTT_Collector
@@ -37,8 +37,6 @@ services:
     image: mongo:latest
     container_name: mongodb1
     environment:
-      #  MONGO_INITDB_ROOT_USERNAME: root
-      #  MONGO_INITDB_ROOT_PASSWORD: example
       MONGO_REPLICA_SET_NAME: rsmongo
     expose:
       - "27017"
@@ -64,9 +62,7 @@ services:
     build: "./mongo"
     container_name: "mongosetup"
     environment:
-      TTL_DOCUMENT: 300 # documents are automatically deleted after 180 seconds
-    #  MONGO_USERNAME: root
-    #  MONGO_PASSWORD: example
+      TTL_DOCUMENT: 300 # documents are automatically deleted after 300 seconds
     depends_on:
       - mongodb1
     volumes:
