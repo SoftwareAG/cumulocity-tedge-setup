@@ -60,6 +60,8 @@ COPY ./etc/init.d/tedge-agent /etc/init.d/tedge-agent
 RUN chmod +x /etc/init.d/tedge-agent
 COPY ./etc/init.d/tedge-mapper-collectd /etc/init.d/tedge-mapper-collectd
 RUN chmod +x /etc/init.d/tedge-mapper-collectd
+COPY ./etc/init.d/tedge-ui /etc/init.d/tedge-ui
+RUN chmod +x /etc/init.d/tedge-ui
 
 #Create required tedge directories and files
 RUN install -g tedge -o tedge -m 755 -d /var/log/tedge

@@ -1,10 +1,10 @@
 #!/sbin/openrc-run
 
 name=$RC_SVCNAME
-description="tedge-mapper-collectd listens to measurements from collectd."
+description="tedge-ui runs web ui to manage the thin edge."
 
-command="/bin/tedge_mapper"
-command_args="collectd"
+command="/app/tedge/start.sh"
+command_args=""
 command_user="tedge-mapper"
 command_background="yes"
 pidfile="/run/$RC_SVCNAME.pid"
