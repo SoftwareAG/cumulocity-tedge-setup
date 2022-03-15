@@ -58,6 +58,8 @@ COPY ./etc/init.d/tedge-mapper-c8y /etc/init.d/tedge-mapper-c8y
 RUN chmod +x /etc/init.d/tedge-mapper-c8y
 COPY ./etc/init.d/tedge-agent /etc/init.d/tedge-agent
 RUN chmod +x /etc/init.d/tedge-agent
+COPY ./etc/init.d/tedge-mapper-collectd /etc/init.d/tedge-mapper-collectd
+RUN chmod +x /etc/init.d/tedge-mapper-collectd
 
 #Create required tedge directories and files
 RUN install -g tedge -o tedge -m 755 -d /var/log/tedge
@@ -88,7 +90,7 @@ RUN chmod +x /etc/tedge/sm-plugins/tedge_dummy_plugin
 RUN rm /app -r
 
 #Configure collectd
-RUN cp /etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
+COPY ./etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
 
 #Build web app
 # build angular app

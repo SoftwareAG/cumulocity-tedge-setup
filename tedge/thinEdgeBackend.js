@@ -374,7 +374,11 @@ class ThinEdgeBackend {
                 {
                     cmd: 'tedge',
                     args: ["config", "set", "mqtt.external.bind_address", "0.0.0.0"]
-                }
+                },
+                {
+                    cmd: '/sbin/rc-service',
+                    args: ["collectd", "start"]
+                },
             ]
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, false)
@@ -412,6 +416,10 @@ class ThinEdgeBackend {
                     cmd: '/sbin/rc-service',
                     args: ["collectd", "stop"]
                 },
+                {
+                    cmd: '/sbin/rc-service',
+                    args: ["tedge-mapper-collectd", "stop"]
+                }
             ]
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, true)
@@ -441,6 +449,10 @@ class ThinEdgeBackend {
                     cmd: 'sudo',
                     args: ['tedge', 'connect', 'c8y'],
                     continueOnError: false
+                },
+                {
+                    cmd: '/sbin/rc-service',
+                    args: ["tedge-mapper-collectd", "start"]
                 }
             ]
 
