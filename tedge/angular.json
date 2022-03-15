@@ -14,7 +14,6 @@
           "builder": "@c8y/cli:build",
           "options": {
             "outputPath": "dist/cumulocity-tedge-setup",
-            "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",

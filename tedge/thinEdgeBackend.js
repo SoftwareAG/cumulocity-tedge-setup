@@ -313,24 +313,24 @@ class ThinEdgeBackend {
                     args: ["Starting kill mosquitto via subproces"]
                 },
                 {
-                    cmd: 'pkill',
-                    args: ["mosquitto"]
+                    cmd: '/sbin/rc-service',
+                    args: ["mosquitto", "stop"]
                 },
                 {
                     cmd: 'echo',
                     args: ["Starting kill tedge via subprocess"]
                 },
                 {
-                    cmd: 'pkill',
-                    args: ["tedge_mapper"]
+                    cmd: '/sbin/rc-service',
+                    args: ["tedge_mapper", "stop"]
                 },
                 {
                     cmd: 'echo',
                     args: ["Starting kill tedge agent via subprocess"]
                 },
                 {
-                    cmd: 'pkill',
-                    args: ["tedge_agent"]
+                    cmd: '/sbin/rc-service',
+                    args: ["tedge_agent", "stop"]
                 },
                 {
                     cmd: 'echo',
@@ -367,20 +367,14 @@ class ThinEdgeBackend {
                     cmd: 'tedge',
                     args: ["config", "set", "c8y.url", tenantUrl]
                 },
-                // {
-                //     cmd: 'tedge',
-                //     args: ['connect', 'c8y', '--test'],
-                //     continueOnError: true
-                // },
                 {
-                    cmd: 'sudo',
-                    args: ['tedge', 'connect', 'c8y'],
-                    continueOnError: true
+                    cmd: 'tedge',
+                    args: ["config", "set", "mqtt.external.port", "8883"]
                 },
-                // {
-                //     cmd: 'tedge',
-                //     args: ['config', 'set', 'software.plugin.default', 'docker']
-                // },
+                {
+                    cmd: 'tedge',
+                    args: ["config", "set", "mqtt.external.bind_address", "0.0.0.0"]
+                }
             ]
             if (!this.cmdInProgress) {
                 taskQueue.queueTasks(tasks, false)
@@ -403,20 +397,20 @@ class ThinEdgeBackend {
             console.log(`Stopping edge processes ${this.cmdInProgress}...`)
             const tasks = [
                 {
-                    cmd: 'pkill',
-                    args: ["mosquitto"]
+                    cmd: '/sbin/rc-service',
+                    args: ["mosquitto", "stop"]
                 },
                 {
-                    cmd: 'pkill',
-                    args: ["tedge_mapper"]
+                    cmd: '/sbin/rc-service',
+                    args: ["tedge_mapper", "stop"]
                 },
                 {
-                    cmd: 'pkill',
-                    args: ["tedge_agent"]
+                    cmd: 'pk/sbin/rc-serviceill',
+                    args: ["tedge_agent", "stop"]
                 },
                 {
-                    cmd: 'pkill',
-                    args: ["collectd"]
+                    cmd: '/sbin/rc-service',
+                    args: ["collectd", "stop"]
                 },
             ]
             if (!this.cmdInProgress) {
@@ -441,64 +435,13 @@ class ThinEdgeBackend {
             const tasks = [
                 {
                     cmd: 'echo',
-                    args: ['Adding allow anonymus true to config of mosquitto']
+                    args: ["Starting connect of c8y"]
                 },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "awk ''!/listener/'' /etc/tedge/mosquitto-conf/tedge-mosquitto.conf > temp"]
-                },
-                {
-                    cmd: 'mv',
-                    args: ['temp', '/etc/tedge/mosquitto-conf/tedge-mosquitto.conf']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "echo ''listener 1883'' >> /etc/tedge/mosquitto-conf/tedge-mosquitto.conf"]
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', "awk ''!/pid_file/'' /etc/mosquitto/mosquitto.conf  > temp"]
-                },
-                {
-                    cmd: 'mv',
-                    args: ['temp', '/etc/mosquitto/mosquitto.conf']
-                },
-                {
-                    cmd: 'mosquitto',
-                    args: ['-c', '/etc/mosquitto/mosquitto.conf', '-v', '-d'],
-                    continueOnError: true
-                },
-                // {
-                //     cmd: 'tedge',
-                //     args: ['connect', 'c8y', '--test'],
-                //     continueOnError: true
-                // },
                 {
                     cmd: 'sudo',
-                    args: ['tedge', 'connect', 'c8y', '--test'],
-                    continueOnError: true
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', 'tedge_mapper c8y &']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', 'tedge_mapper collectd &']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', 'collectd &']
-                },
-                {
-                    cmd: 'sh',
-                    args: ['-c', 'tedge_mapper sm-c8y &']
+                    args: ['tedge', 'connect', 'c8y'],
+                    continueOnError: false
                 }
-                ,
-                {
-                    cmd: 'sh',
-                    args: ['-c', 'tedge_agent &']
-                },
             ]
 
             if (!this.cmdInProgress) {

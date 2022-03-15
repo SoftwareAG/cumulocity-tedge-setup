@@ -59,6 +59,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
   ],
   bootstrap: [BootstrapComponent],
   declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, CumulocityDatapointsChartingWidget, CumulocityDatapointsChartingConfigComponent]
+  //declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, CumulocityDatapointsChartingConfigComponent]
 })
 export class AppModule { }
 
