@@ -20,4 +20,3 @@ start_pre() {
     /bin/mkdir -m 744 -p /var/log/$RC_SVCNAME
     /bin/chown tedge-mapper:tedge-mapper /var/log/$RC_SVCNAME
 }
-

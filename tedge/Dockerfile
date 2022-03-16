@@ -62,6 +62,8 @@ COPY ./etc/init.d/tedge-mapper-collectd /etc/init.d/tedge-mapper-collectd
 RUN chmod +x /etc/init.d/tedge-mapper-collectd
 COPY ./etc/init.d/tedge-ui /etc/init.d/tedge-ui
 RUN chmod +x /etc/init.d/tedge-ui
+# Start tedge-ui
+RUN rc-update add tedge-ui default
 
 #Create required tedge directories and files
 RUN install -g tedge -o tedge -m 755 -d /var/log/tedge
@@ -97,9 +99,10 @@ COPY ./etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
 #Build web app
 # build angular app
 WORKDIR /app/tedge
-#COPY ./ /app/tedge
-#RUN npm install -g @angular/cli && npm install
-#RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
+COPY ./ /app/tedge
+RUN npm install -g @angular/cli && npm install
+RUN ng config -g cli.warnings.versionMismatch false
+RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
 
 
 RUN ln -sf /sbin/openrc-init /sbin/init
