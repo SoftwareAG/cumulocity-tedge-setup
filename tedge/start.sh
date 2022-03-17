@@ -5,4 +5,5 @@ if [ -z "$MONGO_HOST" ] &&   [ -z "$MONGO_PORT" ];  then
   echo "MONGO_HOST or MONGO_PORT are not set, please set it in /app/tedge/tedge-ui" >&2
   exit 1
 fi
-node /app/tedge/server.js
+
+exec node /app/tedge/server.js

@@ -25,12 +25,16 @@ RUN addgroup tedge-users
 RUN addgroup -S tedge
 RUN addgroup -S tedge-agent
 RUN addgroup -S tedge-mapper
+RUN addgroup -S tedge-ui
 RUN adduser -g "" -H -D tedge -G tedge
 RUN adduser -g "" -H -D tedge-agent -G tedge-agent
 RUN adduser -g "" -H -D tedge-mapper -G tedge-mapper
+RUN adduser -g "" -H -D tedge-ui -G tedge-ui
 
 #Add tedge-agent to sudoers
 RUN echo "%tedge-agent   ALL = (ALL) NOPASSWD: /etc/tedge/sm-plugins/[a-zA-Z0-9]*, /bin/sync, /sbin/init" >/etc/sudoers.d/tedge-agent
+#Add tedge-ui to sudoers
+RUN echo "%tedge-ui   ALL = (ALL) NOPASSWD: ALL" >/etc/sudoers.d/tedge-ui
 
 #Create /run/lock
 RUN mkdir /run/lock
@@ -70,6 +74,7 @@ RUN install -g tedge -o tedge -m 755 -d /var/log/tedge
 RUN install -g tedge-agent -o tedge-agent -m 755 -d /var/log/tedge/agent
 RUN install -g tedge -o tedge -m 755 -d /etc/tedge
 RUN install -g tedge -o tedge -m 755 -d /etc/tedge/mosquitto-conf
+RUN install -g tedge-ui -o tedge-ui -m 755 -d /etc/tedge/tedge-ui
 RUN install -g mosquitto -o mosquitto -m 755 -d /etc/tedge/device-certs
 RUN install -g tedge -o tedge -m 755 -d /etc/tedge/operations
 RUN install -g tedge -o tedge -m 755 -d /etc/tedge/operations/c8y
@@ -109,6 +114,9 @@ RUN echo "export MONGO_PORT=$MONGO_PORT" >>/app/tedge/tedge-ui-env
 RUN npm install -g @angular/cli && npm install
 RUN ng config -g cli.warnings.versionMismatch false
 RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
+# Clean up
+#RUN rm /app/tedge/src
+#RUN rm /app/tedge/e2e
 
 RUN ln -sf /sbin/openrc-init /sbin/init
 ENTRYPOINT ["/sbin/init"]

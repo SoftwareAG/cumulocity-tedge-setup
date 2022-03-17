@@ -12,7 +12,7 @@ const MONGO_URL = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}
 const MONGO_MEASUEMENT_COLLECTION = 'measurement'
 const MONGO_SERIES_COLLECTION = 'serie'
 const MONGO_DB = 'localDB'
-const ANALYTICS_CONFIG ='/etc/tedge/analyticsConfig.json'
+const ANALYTICS_CONFIG ='/etc/tedge/tedge-ui/analyticsConfig.json'
 const MAX_MEASUREMENT = 2000;
 
 class ThinEdgeBackend {
@@ -297,40 +297,40 @@ class ThinEdgeBackend {
                     args: ["Starting resetting of certification via subprocess"]
                 },
                 {
-                    cmd: 'tedge',
-                    args: ["cert", "remove"]
+                    cmd: 'sudo',
+                    args: ["tedge", "cert", "remove"]
                 },
                 {
                     cmd: 'echo',
                     args: ["Starting disconnecting c8y via subproces"]
                 },
                 {
-                    cmd: 'tedge',
-                    args: ["disconnect", "c8y"]
+                    cmd: 'sudo',
+                    args: ["tedge", "disconnect", "c8y"]
                 },
                 {
                     cmd: 'echo',
                     args: ["Starting kill mosquitto via subproces"]
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["mosquitto", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "mosquitto", "stop"]
                 },
                 {
                     cmd: 'echo',
                     args: ["Starting kill tedge via subprocess"]
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["tedge_mapper", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "tedge-mapper-c8y", "stop"]
                 },
                 {
                     cmd: 'echo',
                     args: ["Starting kill tedge agent via subprocess"]
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["tedge_agent", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "tedge-agent", "stop"]
                 },
                 {
                     cmd: 'echo',
@@ -360,24 +360,24 @@ class ThinEdgeBackend {
 
             const tasks = [
                 {
-                    cmd: 'tedge',
-                    args: ["cert", "create", "--device-id", deviceId]
+                    cmd: 'sudo',
+                    args: ["tedge", "cert", "create", "--device-id", deviceId]
                 },
                 {
-                    cmd: 'tedge',
-                    args: ["config", "set", "c8y.url", tenantUrl]
+                    cmd: 'sudo',
+                    args: ["tedge", "config", "set", "c8y.url", tenantUrl]
                 },
                 {
-                    cmd: 'tedge',
-                    args: ["config", "set", "mqtt.external.port", "8883"]
+                    cmd: 'sudo',
+                    args: ["tedge", "config", "set", "mqtt.external.port", "8883"]
                 },
                 {
-                    cmd: 'tedge',
-                    args: ["config", "set", "mqtt.external.bind_address", "0.0.0.0"]
+                    cmd: 'sudo',
+                    args: ["tedge", "config", "set", "mqtt.external.bind_address", "0.0.0.0"]
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["collectd", "start"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "collectd", "start"]
                 },
             ]
             if (!this.cmdInProgress) {
@@ -401,24 +401,29 @@ class ThinEdgeBackend {
             console.log(`Stopping edge processes ${this.cmdInProgress}...`)
             const tasks = [
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["mosquitto", "stop"]
+                    cmd: 'sudo',
+                    args: ['tedge', 'disconnect', 'c8y'],
+                    continueOnError: true
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["tedge_mapper", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "mosquitto", "stop"]
                 },
                 {
-                    cmd: 'pk/sbin/rc-serviceill',
-                    args: ["tedge_agent", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "tedge-mapper-c8y", "stop"]
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["collectd", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service","tedge-agent", "stop"]
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["tedge-mapper-collectd", "stop"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service","collectd", "stop"]
+                },
+                {
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service","tedge-mapper-collectd", "stop"]
                 }
             ]
             if (!this.cmdInProgress) {
@@ -451,8 +456,8 @@ class ThinEdgeBackend {
                     continueOnError: false
                 },
                 {
-                    cmd: '/sbin/rc-service',
-                    args: ["tedge-mapper-collectd", "start"]
+                    cmd: 'sudo',
+                    args: ["/sbin/rc-service", "tedge-mapper-collectd", "start"]
                 }
             ]
 
