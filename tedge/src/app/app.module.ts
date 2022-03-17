@@ -15,7 +15,6 @@ import { CloudComponent } from './cloud/cloud.component';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { EdgeNavigationFactory } from './navigation.factory';
 import { SetupComponent } from './setup/setup.component';
-import { EdgeService } from './edge.service';
 import { StatusComponent } from './status/status.component';
 import { CumulocityDatapointsChartingWidget } from './analysis/cumulocity-datapoints-charting-widget.component';
 import { ChartsModule } from 'ng2-charts';
@@ -59,8 +58,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
   ],
   bootstrap: [BootstrapComponent],
   declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, CumulocityDatapointsChartingWidget, CumulocityDatapointsChartingConfigComponent]
-  //declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, CumulocityDatapointsChartingConfigComponent]
-})
+ })
 export class AppModule { }
 
 export function initAppState(appStateService: AppStateService) {

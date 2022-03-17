@@ -115,8 +115,8 @@ RUN npm install -g @angular/cli && npm install
 RUN ng config -g cli.warnings.versionMismatch false
 RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
 # Clean up
-#RUN rm /app/tedge/src
-#RUN rm /app/tedge/e2e
+RUN rm -r /app/tedge/src
+RUN rm -r /app/tedge/e2e
 
 RUN ln -sf /sbin/openrc-init /sbin/init
 ENTRYPOINT ["/sbin/init"]
