@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { EdgeService } from '../edge.service';
 import { RawListItem, SpanListItem } from '../property.model';
-import { rangeUnits, spanList } from './widget-helper';
+import { unitList, spanList } from './widget-helper';
 
 @Component({
   selector: 'app-analysis',
@@ -15,14 +15,14 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   public showDialog: boolean = false;
   public onChangeConfig: EventEmitter<any> = new EventEmitter();
 
-  rangeUnits: RawListItem[] = rangeUnits
+  unitList: RawListItem[] = unitList
   spanList: SpanListItem[] = spanList;
   config: any = {
-    rangeUnit: 2,
-    rangeUnitCount : 30,
     diagramName: 'Analytics'
   }
-  displaySpan: number = 0;
+  rangeUnit: number =  1;
+  rangeUnitCount : number = 30;  // defaults to 30 minutes
+  displaySpanIndex: number = 0;       // realtime
   dateFrom: Date = new Date();
   dateTo: Date = new Date();
   bsConfig = {containerClass: "theme-orange", dateInputFormat: 'DD-MM-YYYY'};
@@ -56,5 +56,12 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   updateTo() {
     console.log("Date to:",this.dateFrom)
   }
+
+  updateRangeUnitCount(event)
+  {
+    console.log("RangeUnitCount:",event.target.value)
+    this.rangeUnitCount = event.target.value
+  }
+
   ngOnDestroy(): void {  }
 }

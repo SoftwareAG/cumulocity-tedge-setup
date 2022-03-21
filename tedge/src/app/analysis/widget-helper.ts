@@ -27,8 +27,8 @@ export const generateNextColor = function (index) {
 }
 
 
-export const rangeUnits: RawListItem[] = [
-  { id: 0, unit: "second", text: "measurements", format: "h:mm:ss.SSS a" },
+export const unitList: RawListItem[] = [
+//  { id: 0, unit: "second", text: "measurements", format: "h:mm:ss.SSS a" },
   { id: 1, unit: "second", text: "second", format: "h:mm:ss a" },
   { id: 60, unit: "second", text: "minute", format: "h:mm a" },
   { id: 3600, unit: "minute", text: "hour", format: "hA" },
@@ -42,10 +42,10 @@ export const rangeUnits: RawListItem[] = [
 
 export const spanList: SpanListItem[] = [
   { text: "Realtime", spanInSeconds: 0},
-  { text: "Last minute", spanInSeconds: 60},
-  { text: "Last 5 minutes", spanInSeconds: 300},
-  { text: "Last 30 minutes", spanInSeconds: 1800},
-  { text: "Custom", spanInSeconds: -1},
+  { text: "Last minute", spanInSeconds: 60, displayUnit: "second"},
+  { text: "Last 5 minutes", spanInSeconds: 300, displayUnit: "minute"},
+  { text: "Last 30 minutes", spanInSeconds: 1800, displayUnit: "hour"},
+  { text: "Custom", spanInSeconds: -1, displayUnit: "hour"},
 ];
 
 export const flatten = function(data) {

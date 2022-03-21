@@ -1,8 +1,7 @@
 
 import { Component, OnInit, EventEmitter, Output, Input} from '@angular/core';
 import { EdgeService } from '../edge.service';
-import { MeasurmentType, RawListItem } from '../property.model';
-import { rangeUnits } from './widget-helper';
+import { MeasurmentType } from '../property.model';
 
 @Component({
   selector: 'cumulocity-datapoints-charting-config',
@@ -18,8 +17,6 @@ export class CumulocityDatapointsChartingConfigComponent implements OnInit {
   @Input() config;
   measurementTypes: MeasurmentType[] = []
   isHidden: boolean = false;
-
-  rangeUnits: RawListItem[] = rangeUnits
 
   async ngOnInit() {
     this.measurementTypes = await this.edgeService.getSeries();

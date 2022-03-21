@@ -1,6 +1,6 @@
 <div class="cumulocity-datapoints-charting-widget-container" style="display:block;">
-    <ng-container class="card-group" *ngIf="chartData && chartData.length > 0">
-                <canvas baseChart [datasets]="chartData" [labels]="chartLabels"
-                    [chartType]="chartType" [colors]="chartColors" [options]="chartOptions"></canvas>
+    <!-- <ng-container class="card-group" *ngIf="datasets && datasets.length > 0"> -->
+    <ng-container class="card-group">
+                <canvas #analytic ></canvas>
     </ng-container>
 </div>

@@ -105,8 +105,8 @@ class ThinEdgeBackend {
         let displaySpan = req.query.displaySpan;
         let dateFrom = req.query.dateFrom;
         let dateTo = req.query.dateTo;
-        console.log("Measurement query:", displaySpan, dateFrom, dateTo);
         if (displaySpan) {
+            console.log("Measurement query (last):", displaySpan);
             let query = {
                 datetime: { // 18 minutes ago (from now)
                     $gt: new Date(Date.now() - 1000 * parseInt(displaySpan))
@@ -120,6 +120,7 @@ class ThinEdgeBackend {
                 res.status(200).json(items);
             });
         } else {
+            console.log("Measurement query (from,to):", dateFrom, dateTo);
             let query = {
                 datetime: { // 18 minutes ago (from now)
                     $gt: new Date(dateFrom),

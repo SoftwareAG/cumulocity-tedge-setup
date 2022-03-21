@@ -7,19 +7,13 @@
                     <label translate>Diagram Name</label>
                     <input class="form-control" [(ngModel)]="config.diagramName" placeholder="diagram name" required />
                     <label translate>Range Unit Count</label>
-                    <input class="form-control" [(ngModel)]="config.rangeUnitCount"
-                        placeholder="number of range units, e.g. number of seconds, minutes, ..." type="number" required />
-                    <label translate>Range Unit</label>
-                    <select class="form-control" name="rangeSelector" [(ngModel)]="config.rangeUnit"
-                        (ngModelChange)="updateConfig()">
-                        <option *ngFor="let rType of rangeUnits; index as i;" [ngValue]="i">
-                            {{ rType.text }}
-                        </option>
-                    </select>
-                    <label for="fitAxis" translate>Fit Axis </label>
-                    <input id="fitAxis" class="form-check-input" style="vertical-align:middle;" type="checkbox" 
-                    [(ngModel)]="config.fitAxis" (click)="updateFitAxis()"/>
-
+                    <label for="fitAxis" translate class="c8y-radio">
+                        <input id="fitAxis" class="form-check-input" style="vertical-align:middle;" type="radio" 
+                        [(ngModel)]="config.fitAxis" (click)="updateFitAxis()"/>
+                        <span></span>
+                        <span>Fit Axis</span>
+                    </label>
+                    
                     <div [hidden]="config.fitAxis">
                         <label translate>Lower range y-axis</label>
                         <input class="form-control" [(ngModel)]="config.rangeLow" placeholder="restrict y axis to interval, here lower border" type="number" required  />

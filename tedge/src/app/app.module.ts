@@ -17,7 +17,7 @@ import { EdgeNavigationFactory } from './navigation.factory';
 import { SetupComponent } from './setup/setup.component';
 import { StatusComponent } from './status/status.component';
 import { CumulocityDatapointsChartingWidget } from './analysis/cumulocity-datapoints-charting-widget.component';
-import { ChartsModule } from 'ng2-charts';
+import { NgChartsModule } from 'ng2-charts';
 import { CumulocityDatapointsChartingConfigComponent } from './analysis/cumulocity-datapoints-charting-config.component';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { TimepickerModule } from 'ngx-bootstrap/timepicker';
@@ -41,7 +41,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     ReactiveFormsModule,
     DynamicFormsModule,
     SocketIoModule.forRoot(config),
-    ChartsModule,
+    NgChartsModule,
     BsDatepickerModule.forRoot(),
     TimepickerModule.forRoot(),
     CommonModule

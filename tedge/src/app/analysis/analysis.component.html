@@ -5,40 +5,59 @@
   <div class="col-sm-12">
     <div class="card">
       <div class="card-header">
-        {{ config.diagramName}}
-        <div class="form-group-sm" style="margin-left: 20px;">
-          <select class="form-control" name="spanSelector" [(ngModel)]="displaySpan">
-            <option *ngFor="let span of spanList" [value]="span.spanInSeconds">
-              <span *ngIf="span.spanInSeconds == 0">
-                {{span.text}} {{config.rangeUnitCount}} * {{rangeUnits[config.rangeUnit].text}}
-              </span>
-              <span *ngIf="span.spanInSeconds != 0">
-                {{span.text}}
-              </span>
-            </option>
-          </select>
-        </div>
-        <div class="datetime-picker" *ngIf="displaySpan == -1" style="margin-left: 20px;">
-          <label class="small m-r-4">From</label>
-          <div class="form-group-sm datepicker">
-            <input type="text" placeholder="Range" class="form-control" bsDatepicker [(ngModel)]="dateFrom"
-              [bsConfig]="bsConfig" (bsValueChange)="updateFrom()">
+        <span>{{ config.diagramName}}</span>
+        <form novalidate="" class="form-inline ng-untouched ng-pristine ng-valid">
+          <div class="form-group">
+            <div class="c8y-select-wrapper form-group" style="margin-left: 20px;">
+              <select class="form-control" name="spanSelector" [(ngModel)]="displaySpanIndex">
+                <option *ngFor="let span of spanList; let i = index" [value]="i">
+                  <span>
+                    {{span.text}}
+                  </span>
+                </option>
+              </select>
+            </div>
+            <div *ngIf="displaySpanIndex == 4" class="form-group">
+              <div class="datetime-picker" style="margin-left: 20px;">
+                <label class="small m-r-4">From</label>
+                <div class="form-group-sm datepicker">
+                  <input type="text" placeholder="Range" class="form-control" bsDatepicker [(ngModel)]="dateFrom"
+                    [bsConfig]="bsConfig" (bsValueChange)="updateFrom()">
+                </div>
+                <timepicker class="form-group-sm" [(ngModel)]="dateFrom" [showMeridian]="showMeridian"
+                  [showSpinners]="showSpinners" (bsValueChange)="updateFrom()"></timepicker>
+              </div>
+              <div class="datetime-picker" style="margin-left: 20px;">
+                <label class="small m-r-4">To</label>
+                <div class="form-group-sm datepicker">
+                  <input type="text" placeholder="Range" class="form-control" [minDate]="dateFrom" bsDatepicker
+                    [(ngModel)]="dateTo" [bsConfig]="bsConfig" (bsValueChange)="updateTo()">
+                </div>
+                <timepicker class="form-group-sm" [(ngModel)]="dateTo" [showMeridian]="showMeridian"
+                  [showSpinners]="showSpinners" (bsValueChange)="updateTo()"></timepicker>
+              </div>
+            </div>
+
+            <div *ngIf="displaySpanIndex == 0" class="form-group">
+
+              <label class="col-sm-4" for="ruc">Range Unit Count</label>
+              <input [value]="rangeUnitCount" #ruc (change)="updateRangeUnitCount($event)"
+                placeholder="number of range units, e.g. number of seconds, minutes, ..." required type="number">
+              <label class="col-sm-4" for="ru">Range Unit</label>
+              <div class="c8y-select-wrapper" #ru>
+                <select class="form-control" name="rangeSelector" [(ngModel)]="rangeUnit">
+                  <option *ngFor="let un of unitList; index as i;" [ngValue]="i">
+                    {{ un.text }}
+                  </option>
+                </select>
+              </div>
+            </div>
           </div>
-          <timepicker class="form-group-sm" [(ngModel)]="dateFrom" [showMeridian]="showMeridian" [showSpinners]="showSpinners"
-            (bsValueChange)="updateFrom()"></timepicker>
-        </div>
-        <div class="datetime-picker" *ngIf="displaySpan == -1" style="margin-left: 20px;">
-          <label class="small m-r-4">To</label>
-          <div class="form-group-sm datepicker">
-            <input type="text" placeholder="Range" class="form-control" [minDate]="dateFrom" bsDatepicker [(ngModel)]="dateTo"
-              [bsConfig]="bsConfig" (bsValueChange)="updateTo()">
-          </div>
-          <timepicker class="form-group-sm" [(ngModel)]="dateTo" [showMeridian]="showMeridian" [showSpinners]="showSpinners"
-            (bsValueChange)="updateTo()"></timepicker>
-        </div>
+        </form>
       </div>
       <div class="card-block my-card-body">
-        <cumulocity-datapoints-charting-widget [config]="config" [displaySpan]="displaySpan" [dateFrom]="dateFrom" [dateTo]="dateTo">
+        <cumulocity-datapoints-charting-widget [config]="config" [displaySpanIndex]="displaySpanIndex" [dateFrom]="dateFrom"
+          [dateTo]="dateTo" [rangeUnitCount]="rangeUnitCount" [rangeUnit]="rangeUnit">
         </cumulocity-datapoints-charting-widget>
       </div>
     </div>
