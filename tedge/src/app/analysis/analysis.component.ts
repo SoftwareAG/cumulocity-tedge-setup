@@ -21,7 +21,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
     diagramName: 'Analytics'
   }
   rangeUnit: number =  1;
-  rangeUnitCount : number = 30;  // defaults to 30 minutes
+  rangeUnitCount : number = 50;  // defaults to 5 minutes
   displaySpanIndex: number = 0;       // realtime
   dateFrom: Date = new Date();
   dateTo: Date = new Date();

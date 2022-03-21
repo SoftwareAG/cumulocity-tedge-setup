@@ -6,7 +6,7 @@ import StreamingPlugin from 'chartjs-plugin-streaming';
 import { Observable, Subscription } from 'rxjs';
 import { EdgeService } from '../edge.service';
 import { RawMeasurment } from '../property.model';
-import { flatten, generateNextColor, unitList, spanList} from './widget-helper';
+import { flatten, generateNextColor, unitList, spanList } from './widget-helper';
 
 Chart.register(StreamingPlugin);
 
@@ -45,18 +45,18 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
       duration: 300000 // 5 minutes
     }
   };
-  
+
   x_fixed: any = {
     type: 'time',
     time: {
-        unit: 'minute'
+      unit: 'minute'
     }
   };
 
   chartOptions: ChartOptions = {
     scales: {
       x: this.x_realtime,
-      y: { }
+      y: {}
     }
   };
 
@@ -155,19 +155,19 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
     }
   }
 
-  
+
   private stopRealtime() {
     console.log("Realtime stopped!")
     if (this.subscriptionMongoMeasurement) this.subscriptionMongoMeasurement.unsubscribe();
     this.edgeService.stopMeasurements();
   }
-  
+
   ngOnChanges(changes: SimpleChanges) {
     for (const propName in changes) {
       const changedProp = changes[propName];
       if (propName == "config") {
-        console.log("Changed property", changedProp, propName, parseInt(changedProp.currentValue.rangeLow))  
-        
+        console.log("Changed property", changedProp, propName, parseInt(changedProp.currentValue.rangeLow))
+
         if (parseInt(changedProp.currentValue.rangeLow)) {
           this.chartOptions.scales.y.min = parseInt(changedProp.currentValue.rangeLow)
         }
@@ -189,7 +189,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
       } else if (propName == "displaySpanIndex") {
         this.displaySpanIndex = parseInt(changedProp.currentValue)
         this.x_fixed.time.unit = spanList[this.displaySpanIndex].displayUnit
-        console.log("Changed displaySpan", this.displaySpanIndex);
+        console.log("Changed displaySpanIndex", this.displaySpanIndex, this.x_fixed.time.unit);
         this.updateDisplayMode();
       } else if (propName == "dateFrom") {
         this.dateFrom = changedProp.currentValue
@@ -207,21 +207,26 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
     console.log("UpdateDisplayMode called!")
     this.stopRealtime();
     // if historical data to be displayed
-    if (this.displaySpanIndex == -1) {
+    if (this.displaySpanIndex == 4) {
       this.chartOptions.scales['x'] = this.x_fixed;
+      this.resetChart();
       let ob = await this.edgeService.getMeasurements(this.dateFrom, this.dateTo);
       ob.forEach(m => this.pushEventToChartData(m))
       // console.log("New history", ob)
     } else if (this.displaySpanIndex > 0) {
       this.chartOptions.scales['x'] = this.x_fixed;
+      this.resetChart();
       let ob = await this.edgeService.getLastMeasurements(spanList[this.displaySpanIndex].spanInSeconds);
-      ob.forEach(m => this.pushEventToChartData(m))
+      ob.forEach(m => {
+        this.pushEventToChartData(m)
+        console.log("New history measurement:", m)
+      })
       // console.log("New history", ob)
     } else {
       this.chartOptions.scales['x'] = this.x_realtime;
+      this.resetChart();
       this.startRealtime();
     }
-    this.resetChart();
   }
 
   ngOnDestroy() {

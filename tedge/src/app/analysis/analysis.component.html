@@ -6,6 +6,8 @@
     <div class="card">
       <div class="card-header">
         <span>{{ config.diagramName}}</span>
+      </div>
+      <div class="card-block my-card-body">
         <form novalidate="" class="form-inline ng-untouched ng-pristine ng-valid">
           <div class="form-group">
             <div class="c8y-select-wrapper form-group" style="margin-left: 20px;">
@@ -37,9 +39,9 @@
                   [showSpinners]="showSpinners" (bsValueChange)="updateTo()"></timepicker>
               </div>
             </div>
-
-            <div *ngIf="displaySpanIndex == 0" class="form-group">
-
+  
+            <div *ngIf="displaySpanIndex == 0" class="d-inline-block form-group">
+  
               <label class="col-sm-4" for="ruc">Range Unit Count</label>
               <input [value]="rangeUnitCount" #ruc (change)="updateRangeUnitCount($event)"
                 placeholder="number of range units, e.g. number of seconds, minutes, ..." required type="number">
@@ -54,8 +56,6 @@
             </div>
           </div>
         </form>
-      </div>
-      <div class="card-block my-card-body">
         <cumulocity-datapoints-charting-widget [config]="config" [displaySpanIndex]="displaySpanIndex" [dateFrom]="dateFrom"
           [dateTo]="dateTo" [rangeUnitCount]="rangeUnitCount" [rangeUnit]="rangeUnit">
         </cumulocity-datapoints-charting-widget>
