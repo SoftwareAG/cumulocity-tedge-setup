@@ -1,11 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 //import { AppRoutingModule } from './app-routing.module';
 import { RouterModule as ngRouterModule } from '@angular/router';
-import { CoreModule, BootstrapComponent, RouterModule, HOOK_NAVIGATOR_NODES, CommonModule, AppStateService, FormsModule, DynamicFormsModule } from '@c8y/ngx-components';
+import { CoreModule, BootstrapComponent, RouterModule, HOOK_NAVIGATOR_NODES, CommonModule, AppStateService } from '@c8y/ngx-components';
 import { ICurrentTenant, IUser } from '@c8y/client';
 import { CertificateComponent } from './certificate/certificate.component';
 import { BehaviorSubject } from 'rxjs';
@@ -16,9 +16,9 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { EdgeNavigationFactory } from './navigation.factory';
 import { SetupComponent } from './setup/setup.component';
 import { StatusComponent } from './status/status.component';
-import { CumulocityDatapointsChartingWidget } from './analysis/cumulocity-datapoints-charting-widget.component';
+import { ChartingWidget } from './analysis/charting-widget.component';
 import { NgChartsModule } from 'ng2-charts';
-import { CumulocityDatapointsChartingConfigComponent } from './analysis/cumulocity-datapoints-charting-config.component';
+import { ChartingConfigComponent } from './analysis/charting-config.component';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { TimepickerModule } from 'ngx-bootstrap/timepicker';
 
@@ -39,7 +39,6 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     CoreModule.forRoot(),
     FormsModule,
     ReactiveFormsModule,
-    DynamicFormsModule,
     SocketIoModule.forRoot(config),
     NgChartsModule,
     BsDatepickerModule.forRoot(),
@@ -57,7 +56,7 @@ const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
     },
   ],
   bootstrap: [BootstrapComponent],
-  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, CumulocityDatapointsChartingWidget, CumulocityDatapointsChartingConfigComponent]
+  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, ChartingWidget, ChartingConfigComponent]
  })
 export class AppModule { }
 
@@ -69,7 +68,7 @@ export function initAppState(appStateService: AppStateService) {
       displayName: "tedgeUser",
       email: "tedge@cumulocity.com",
       enabled: true,
-      firstName: "First",
+      firstName: "Edge",
       lastName: "User",
       customProperties: [],
       applications: [{

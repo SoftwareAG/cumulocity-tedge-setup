@@ -104,19 +104,19 @@ COPY ./etc/tedge/contrib/collectd/collectd.conf /etc/collectd/collectd.conf
 #Build web app
 # build angular app
 WORKDIR /app/tedge
-##COPY ./ /app/tedge
+COPY ./ /app/tedge
 # Set environment MONGO_HOTS, MONGO_PORT variavle in /app/tedge/tedge-ui-env
 #ARG MONGO_HOST
 ARG MONGO_PORT ${MONGO_PORT}
 ARG MONGO_HOST ${MONGO_HOST}
-##RUN echo "export MONGO_HOST=$MONGO_HOST" >/app/tedge/tedge-ui-env
-##RUN echo "export MONGO_PORT=$MONGO_PORT" >>/app/tedge/tedge-ui-env
-##RUN npm install -g @angular/cli && npm install
-##RUN ng config -g cli.warnings.versionMismatch false
-##RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
+RUN echo "export MONGO_HOST=$MONGO_HOST" >/app/tedge/tedge-ui-env
+RUN echo "export MONGO_PORT=$MONGO_PORT" >>/app/tedge/tedge-ui-env
+RUN npm install -g @angular/cli && npm install
+RUN ng config -g cli.warnings.versionMismatch false
+RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
 # Clean up
-##RUN rm -r /app/tedge/src
-##RUN rm -r /app/tedge/e2e
+RUN rm -r /app/tedge/src
+RUN rm -r /app/tedge/e2e
 
 RUN ln -sf /sbin/openrc-init /sbin/init
 ENTRYPOINT ["/sbin/init"]

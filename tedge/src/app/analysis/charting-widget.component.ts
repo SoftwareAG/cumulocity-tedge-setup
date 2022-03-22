@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { tick } from '@angular/core/testing';
-import { Chart, ChartOptions, ChartConfiguration } from 'chart.js';
+import { Chart, ChartOptions, ChartConfiguration, ScatterDataPoint } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import StreamingPlugin from 'chartjs-plugin-streaming';
 import { Observable, Subscription } from 'rxjs';
@@ -11,32 +11,33 @@ import { flatten, generateNextColor, unitList, spanList } from './widget-helper'
 Chart.register(StreamingPlugin);
 
 @Component({
-  selector: "cumulocity-datapoints-charting-widget",
-  templateUrl: "./cumulocity-datapoints-charting-widget.component.html",
-  styleUrls: ["./cumulocity-datapoints-charting-widget.component.css"],
+  selector: "charting-widget",
+  templateUrl: "./charting-widget.component.html",
+  styleUrls: ["./charting-widget.component.css"],
 })
-export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, OnChanges {
-
+export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
+  
   constructor(
     private edgeService: EdgeService,
-  ) { }
-
-  ngOnInit(): void {
-  }
-
-  @ViewChild('analytic') private lineChartCanvas: ElementRef;
-  lineChart: any;
-
-  @Input() config: any;
-  @Input() displaySpanIndex: number;   // default of diagram is always realtime
-  @Input() dateFrom: Date;
-  @Input() dateTo: Date;
-  @Input() rangeUnitCount: number;
-  @Input() rangeUnit: number;
-
-  subscriptionMongoMeasurement: Subscription
-  measurements$: Observable<RawMeasurment>
-  chartDataPointList: { [name: string]: number } = { index: 0 }
+    ) { }
+    
+    ngOnInit(): void {
+    }
+    
+    @ViewChild('analytic') private lineChartCanvas: ElementRef;
+    
+    @Input() config: any;
+    @Input() displaySpanIndex: number;   // default of diagram is always realtime
+    @Input() dateFrom: Date;
+    @Input() dateTo: Date;
+    @Input() rangeUnitCount: number;
+    @Input() rangeUnit: number;
+    
+    subscriptionMongoMeasurement: Subscription
+    measurements$: Observable<RawMeasurment>
+    chartDataPointList: { [name: string]: number } = { index: 0 }
+    lineChart: Chart;
+    fillCurve: boolean;
 
   x_realtime: any = {
     type: 'realtime',
@@ -49,7 +50,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
   x_fixed: any = {
     type: 'time',
     time: {
-      unit: 'minute'
+      unit: 'minute',
     }
   };
 
@@ -57,7 +58,8 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
     scales: {
       x: this.x_realtime,
       y: {}
-    }
+    },
+    //parsing: false
   };
 
   chartConfiguration: ChartConfiguration = {
@@ -111,7 +113,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
                 //backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 borderColor: nextColor,
                 borderDash: [8, 4],
-                fill: true,
+                fill: this.fillCurve,
                 data: []
               }
             )
@@ -124,8 +126,9 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
           //(_chartData[this.chartDataPointList[key]].data as ChartPoint[]).push(dp)
           let p = {
             x: event.datetime,
+            //x: event.timestamp,
             y: flat[key]
-          }
+          } as any
           //console.log("New DataPoint", event, p, this.chartDataPointList[key] ); 
           this.lineChart.data.datasets[this.chartDataPointList[key]].data.push(p)
         } else {
@@ -167,7 +170,9 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
       const changedProp = changes[propName];
       if (propName == "config") {
         console.log("Changed property", changedProp, propName, parseInt(changedProp.currentValue.rangeLow))
-
+        if (changedProp.currentValue.fillCurve) {
+          this.fillCurve = changedProp.currentValue.fillCurve
+        }
         if (parseInt(changedProp.currentValue.rangeLow)) {
           this.chartOptions.scales.y.min = parseInt(changedProp.currentValue.rangeLow)
         }
@@ -231,5 +236,7 @@ export class CumulocityDatapointsChartingWidget implements OnDestroy, OnInit, On
 
   ngOnDestroy() {
     this.stopRealtime();
+    console.log("Destroy called.")
+    this.lineChart.destroy();
   }
 }
