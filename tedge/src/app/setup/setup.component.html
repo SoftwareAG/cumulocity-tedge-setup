@@ -5,7 +5,7 @@
     <div class="card-block">
         <div class="form-group" [formGroup]="configutationForm">
             <c8y-form-group class="col-lg-4">
-                <label translate>Tenant URL</label>
+                <label translate>Tenant Name</label>
                 <input class="form-control" type="text" formControlName="tenantUrl"
                     placeholder="your-tenant.cumulocity.com" #tenantUrlRef required [readonly]="edgeConfiguration['device.id'] && edgeConfiguration['c8y.url']"/>
                 <label title="Device ID">External Device Id</label>
@@ -13,20 +13,11 @@
                     #externalDeviceIdRef required />
             </c8y-form-group>
         </div>
-    </div>
+    </div>s
 </div>
 
 <div class="card">
     <div class="card-block">
-<!--         <div class="container">
-            <div class="btn-group" style="width:100%">
-                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="configureEdge()">Configure Edge</button>
-                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="downloadCertificate()">Download Certificate</button>
-                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="startEdge()">Start Edge</button>
-                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="stopEdge()">Stop Edge</button>
-                <button class="btn btn-primary" style="width:20%; margin-left:5%;" type="button" (click)="resetEdge()">Reset Edge</button>
-            </div>
-        </div> -->
         <div class="button-container">
             <div class="button-group btn-group">
                 <button class="btn btn-primary" type="button" (click)="configureEdge()">Configure Edge</button>
