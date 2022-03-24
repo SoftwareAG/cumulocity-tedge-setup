@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -33,10 +33,9 @@
     "express": "^4.17.1",
     "font-awesome": "^4.7.0",
     "fontawesome": "^5.6.3",
-    "idb": "^7.0.0",
     "luxon": "^2.3.1",
     "mongodb": "^4.2.0",
-    "ng2-charts": "^3.0.0-rc.7",
+    "ng2-charts": "3.0.0-rc.7",
     "ngx-socket-io": "4.0",
     "properties-to-json": "^0.2.1",
     "rxjs": "~6.6.3",
@@ -44,14 +43,14 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "0.1101.4",
+    "@angular-devkit/build-angular": "0.1101.2",
     "@angular/cli": "11.1.2",
     "@angular/compiler-cli": "11.1.2",
     "@angular/language-service": "11.1.2",
     "@c8y/cli": "1011.0.15",
     "@types/luxon": "^2.3.1",
     "http-proxy-middleware": "^2.0.1",
-    "typescript": "4.0.7"
+    "typescript": "~4.1.2"
   },
   "main": "src/main.ts",
   "c8y": {

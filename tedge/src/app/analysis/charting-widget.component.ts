@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { tick } from '@angular/core/testing';
-import { Chart, ChartOptions, ChartConfiguration, ScatterDataPoint } from 'chart.js';
+import { Chart, ChartOptions, ChartConfiguration, UpdateMode } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import StreamingPlugin from 'chartjs-plugin-streaming';
 import { Observable, Subscription } from 'rxjs';
@@ -85,6 +85,7 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
     this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: RawMeasurment) => {
       //console.log("New Mongo Measurement", m)
       this.pushEventToChartData(m)
+      this.updateChart("show")
     })
   }
 
@@ -135,8 +136,6 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
           //console.log("Ignore key", this.chartDataPointList[key], key);
         }
       }
-
-      this.updateChart()
     }
   }
 
@@ -146,15 +145,14 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
       this.lineChart.data.datasets = [];
       this.lineChart.options = this.chartOptions
     }
-    this.updateChart()
   }
 
-  private updateChart() {
+  private updateChart(mode:UpdateMode) {
     if (this.lineChart) {
       console.log("UpdateChart called!")
-      this.lineChart.update();
+      this.lineChart.update(mode);
     } else {
-      console.log("UpdateChart sorry empty!")
+      //console.log("UpdateChart sorry empty!")
     }
   }
 
@@ -193,7 +191,6 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
         this.updateDisplayMode();
       } else if (propName == "displaySpanIndex") {
         this.displaySpanIndex = parseInt(changedProp.currentValue)
-        this.x_fixed.time.unit = spanList[this.displaySpanIndex].displayUnit
         console.log("Changed displaySpanIndex", this.displaySpanIndex, this.x_fixed.time.unit);
         this.updateDisplayMode();
       } else if (propName == "dateFrom") {
@@ -211,26 +208,26 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
   public async updateDisplayMode() {
     console.log("UpdateDisplayMode called!")
     this.stopRealtime();
-    // if historical data to be displayed
-    if (this.displaySpanIndex == 4) {
-      this.chartOptions.scales['x'] = this.x_fixed;
-      this.resetChart();
-      let ob = await this.edgeService.getMeasurements(this.dateFrom, this.dateTo);
-      ob.forEach(m => this.pushEventToChartData(m))
-      // console.log("New history", ob)
-    } else if (this.displaySpanIndex > 0) {
-      this.chartOptions.scales['x'] = this.x_fixed;
-      this.resetChart();
-      let ob = await this.edgeService.getLastMeasurements(spanList[this.displaySpanIndex].spanInSeconds);
-      ob.forEach(m => {
-        this.pushEventToChartData(m)
-        console.log("New history measurement:", m)
-      })
-      // console.log("New history", ob)
-    } else {
+    if (this.displaySpanIndex == 0) {
+      // realtime data is displayed
       this.chartOptions.scales['x'] = this.x_realtime;
       this.resetChart();
       this.startRealtime();
+    } else  {
+      // if historical data to be displayed  
+      this.x_fixed.time.unit = spanList[this.displaySpanIndex].displayUnit
+      this.chartOptions.scales['x'] = this.x_fixed;
+      this.resetChart();
+      let ob: any[]
+      if (this.displaySpanIndex == 4) {
+        // if historical data is an interval 
+        ob = await this.edgeService.getMeasurements(this.dateFrom, this.dateTo);
+      } else {
+        ob = await this.edgeService.getLastMeasurements(spanList[this.displaySpanIndex].spanInSeconds);
+      }
+      ob.forEach(m => this.pushEventToChartData(m))
+      // console.log("New history", ob)
+      this.updateChart("none")
     }
   }
 

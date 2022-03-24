@@ -56,9 +56,6 @@ package-lock.json
 MQTT_Collector/__pycache__/mongo.cpython-39.pyc
 MQTT_Collector/__pycache__/mqtt.cpython-39.pyc
 attic/Dockerfile
-.gitignore
-.gitignore
-.gitignore
 attic/tenants.json
 attic/tenants.csv
 tedge/package-lock.json

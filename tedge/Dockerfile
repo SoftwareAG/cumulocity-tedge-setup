@@ -113,10 +113,18 @@ RUN echo "export MONGO_HOST=$MONGO_HOST" >/app/tedge/tedge-ui-env
 RUN echo "export MONGO_PORT=$MONGO_PORT" >>/app/tedge/tedge-ui-env
 RUN npm install -g @angular/cli && npm install
 RUN ng config -g cli.warnings.versionMismatch false
-RUN ng build --output-path=/app/tedge/dist/cumulocity-tedge-setup
+RUN ng build  --output-path=/app/tedge/dist/cumulocity-tedge-setup
 # Clean up
 RUN rm -r /app/tedge/src
 RUN rm -r /app/tedge/e2e
+RUN rm -r /app/tedge/etc
+
+# Copy sample certificates
+#
+#COPY ./etc/tedge/device-certs/*  /etc/tedge/device-certs/
+#RUN chown mosquitto:mosquitto /etc/tedge/device-certs/
+#COPY ./etc/tedge/tedge.toml  /etc/tedge/
+#RUN chown tedge:tedge  /etc/tedge/tedge.toml
 
 RUN ln -sf /sbin/openrc-init /sbin/init
 ENTRYPOINT ["/sbin/init"]

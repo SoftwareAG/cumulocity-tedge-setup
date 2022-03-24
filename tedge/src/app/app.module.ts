@@ -22,7 +22,7 @@ import { ChartingConfigComponent } from './analysis/charting-config.component';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { TimepickerModule } from 'ngx-bootstrap/timepicker';
 
-const config: SocketIoConfig = { url: 'http://localhost:9080', options: {} };
+const config: SocketIoConfig = { url: location.origin, options: {} };
 
 @NgModule({
   imports: [

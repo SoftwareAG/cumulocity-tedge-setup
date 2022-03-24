@@ -18,7 +18,7 @@ services:
       - MONGO_HOST=mongodb1
       - MONGO_PORT=27017
     depends_on:
-      - mongodb1
+      - mongodb
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
   # Test version: map local directory and build angular locally (three changes are required in total)  
@@ -28,7 +28,7 @@ services:
   #  - ./:/app/
   #  - ./tedge/etc/tedge:/etc/tedge
   mqtt_collector:
-    build: ./MQTT_Collector
+    build: ./mqtt_collector
     hostname: mqtt_collector
     container_name: mqtt_collector
     deploy:
@@ -39,9 +39,10 @@ services:
       - MQTT_PORT=8883
       - MONGO_HOST=mongodb1
       - MONGO_PORT=27017
-  mongodb1:
+  mongodb:
     image: mongo:latest
-    container_name: mongodb1
+    container_name: mongodb
+    hostname: mongodb1
     environment:
       MONGO_REPLICA_SET_NAME: rsmongo
     expose:
@@ -70,6 +71,6 @@ services:
     environment:
       TTL_DOCUMENT: 300 # documents are automatically deleted after 300 seconds
     depends_on:
-      - mongodb1
+      - mongodb
     volumes:
       - ./mongo/data2:/data/

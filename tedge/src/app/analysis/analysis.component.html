@@ -23,19 +23,19 @@
               <div class="measurements-date-from" style="margin-left: 20px;">
                 <label class="small m-r-4">From</label>
                 <div class="d-inline-block form-inline datepicker">
-                  <input type="text" placeholder="Range" class="form-control" bsDatepicker [(ngModel)]="dateFrom"
+                  <input type="text" name="dateFromDate" placeholder="Range" class="form-control" bsDatepicker [(ngModel)]="dateFrom"
                     [bsConfig]="bsConfig" (bsValueChange)="updateFrom()">
                 </div>
-                <timepicker class="form-group" [(ngModel)]="dateFrom" [showMeridian]="showMeridian"
+                <timepicker class="form-group"  name="dateFromTime" [(ngModel)]="dateFrom" [showMeridian]="showMeridian"
                   [showSpinners]="showSpinners" (bsValueChange)="updateFrom()"></timepicker>
               </div>
               <div class="measurements-date-to" style="margin-left: 20px;">
                 <label class="small m-r-4">To</label>
                 <div class="d-inline-block form-inline datepicker">
-                  <input type="text" placeholder="Range" class="form-control" [minDate]="dateFrom" bsDatepicker
+                  <input type="text" name="dateToDate" placeholder="Range" class="form-control" [minDate]="dateFrom" bsDatepicker
                     [(ngModel)]="dateTo" [bsConfig]="bsConfig" (bsValueChange)="updateTo()">
                 </div>
-                <timepicker class="form-group" [(ngModel)]="dateTo" [showMeridian]="showMeridian"
+                <timepicker class="form-group"  name="dateToTime" [(ngModel)]="dateTo" [showMeridian]="showMeridian"
                   [showSpinners]="showSpinners" (bsValueChange)="updateTo()"></timepicker>
               </div>
             </div>
