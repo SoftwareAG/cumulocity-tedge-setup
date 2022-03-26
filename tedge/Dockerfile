@@ -116,7 +116,6 @@ RUN ng config -g cli.warnings.versionMismatch false
 RUN ng build  --output-path=/app/tedge/dist/cumulocity-tedge-setup
 # Clean up
 RUN rm -r /app/tedge/src
-RUN rm -r /app/tedge/e2e
 RUN rm -r /app/tedge/etc
 
 # Copy sample certificates

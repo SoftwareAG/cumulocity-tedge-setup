@@ -22,7 +22,7 @@ export class SetupComponent implements OnInit {
   progress: number;
   commandTerminal: string
   command: string
-  configutationForm: FormGroup
+  configurationForm: FormGroup
   edgeConfiguration: any = {}
 
   constructor(private edgeService: EdgeService, private alertService: AlertService, private formBuilder: FormBuilder) { }
@@ -54,7 +54,7 @@ export class SetupComponent implements OnInit {
     })
   }
   initForm() {
-    this.configutationForm = this.formBuilder.group({
+    this.configurationForm = this.formBuilder.group({
       tenantUrl: [(this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''), Validators.required],
       deviceId: [(this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''), Validators.required],
     });
@@ -76,17 +76,17 @@ export class SetupComponent implements OnInit {
 
   configureEdge() {
     const up = {
-      'device.id': this.configutationForm.value.deviceId,
-      'c8y.url': this.configutationForm.value.tenantUrl,
+      'device.id': this.configurationForm.value.deviceId,
+      'c8y.url': this.configurationForm.value.tenantUrl,
     }
     this.edgeService.updateEdgeConfiguration (up);
     this.getNewConfiguration()
     this.command = 'configure'
     this.initalizeTerminal()
-    let url =  this.configutationForm.controls['tenantUrl'].value.replace('https://','').replace('/', '')
+    let url =  this.configurationForm.controls['tenantUrl'].value.replace('https://','').replace('/', '')
     this.edgeService.sendCMDToEdge({
       cmd: this.command,
-      deviceId: this.configutationForm.value.deviceId,
+      deviceId: this.configurationForm.value.deviceId,
       tenantUrl: url
     })
     this.commandTerminal = "Configure Thin Edge ..."
@@ -94,7 +94,7 @@ export class SetupComponent implements OnInit {
   getNewConfiguration() {
     this.edgeService.getEdgeConfiguration().then ( config => {
       this.edgeConfiguration = config
-      this.configutationForm.setValue ({
+      this.configurationForm.setValue ({
         tenantUrl: this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: '',
         deviceId: this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: '',
       })

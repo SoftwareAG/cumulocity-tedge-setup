@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { IManagedObject, IMeasurementCreate } from '@c8y/client';
-import { ActionControl, AlertService, Column, ColumnDataType, Pagination } from '@c8y/ngx-components';
+import { ActionControl, AlertService, Column, ColumnDataType, DisplayOptions, Pagination } from '@c8y/ngx-components';
 import { Observable } from 'rxjs';
 import { EdgeService } from '../edge.service';
 import { properCase, unCamelCase } from './cloud-helper';
@@ -31,6 +31,13 @@ export class CloudComponent implements OnInit {
   pagination: Pagination = {
     pageSize: 30,
     currentPage: 1,
+  };
+
+  displayOptions: DisplayOptions = {
+    bordered: true,
+    striped: true,
+    filter: false,
+    gridHeader: true
   };
 
   actionControls: ActionControl[] = [];

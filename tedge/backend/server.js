@@ -35,7 +35,7 @@ app.use(express.json());
 // Create link to Angular build directory
 // The `ng build` command will save the result
 // under the `dist` folder.
-var distDir = __dirname + "/dist/cumulocity-tedge-setup";
+var distDir = __dirname + "/../dist/cumulocity-tedge-setup";
 //app.use("/home", express.static(distDir));
 app.use(express.static(distDir));
 
