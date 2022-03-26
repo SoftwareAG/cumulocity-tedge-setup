@@ -1,3 +1,5 @@
+// Overwrite console
+require('console-stamp')(console, '[HH:MM:ss.l]');
 // Use Express
 const express = require("express");
 const http = require('http');
@@ -93,7 +95,7 @@ app.get("/api/status", function (req, res) {
  */
 app.post("/config", function (req, res) {
     let proxy = req.body.proxy
-    console.log(`setting proxy: ${proxy}`);
+    console.log(`Setting proxy: ${proxy}`);
     options.target = proxy
     // set up proxy 
     app.use('/c8y', options);
@@ -114,8 +116,29 @@ app.get("/api/analyticsConfiguration", function (req, res) {
     thinEdgeBackend.ThinEdgeBackend.getAnalyticsConfiguration(req,res)
 });
 
+/* 
+*   Empty dummy responses to avoid errors in the browser console 
+*/
+app.get("/apps/*", function (req, res) {
+    console.log ("Ignore request!");
+    res.status(200).json({ result: "OK" });
+});
+app.get("/tenant/*", function (req, res) {
+    console.log ("Ignore request!");
+    res.status(200).json({ result: "OK" });
+});
+
+app.get("/application/*", function (req, res) {
+    console.log ("Ignore request!");
+    const result = {
+        "applications": [
+        ]
+    }
+    res.status(200).json(result);
+});
+
 io.on('connection', function (socket) {
-    console.log(`New connection: ${socket.id}`);
+    console.log(`New connection from web ui: ${socket.id}`);
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
 /*         msg = JSON.parse(message)

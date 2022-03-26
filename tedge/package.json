@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --prod",
+    "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -29,6 +29,7 @@
     "bollinger-bands": "^3.0.2",
     "chartjs-adapter-luxon": "^1.1.0",
     "chartjs-plugin-streaming": "^2.0.0",
+    "console-stamp": "^3.0.4",
     "d3-scale-chromatic": "^3.0.0",
     "express": "^4.17.1",
     "font-awesome": "^4.7.0",

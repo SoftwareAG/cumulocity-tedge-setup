@@ -80,7 +80,7 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
   }
 
   startRealtime() {
-    console.log("Realtime started!")
+    //console.log("Realtime started!")
     this.measurements$ = this.edgeService.getRealtimeMeasurements()
     this.subscriptionMongoMeasurement = this.measurements$.subscribe((m: RawMeasurment) => {
       //console.log("New Mongo Measurement", m)
@@ -158,7 +158,7 @@ export class ChartingWidget implements OnDestroy, OnInit, OnChanges {
 
 
   private stopRealtime() {
-    console.log("Realtime stopped!")
+    //console.log("Realtime stopped!")
     if (this.subscriptionMongoMeasurement) this.subscriptionMongoMeasurement.unsubscribe();
     this.edgeService.stopMeasurements();
   }

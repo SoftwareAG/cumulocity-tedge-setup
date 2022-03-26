@@ -29,7 +29,7 @@ class ThinEdgeBackend {
         });
         //console.log(`Socket: ${socket.id}`)
         if (ThinEdgeBackend.measurementCollection == null || ThinEdgeBackend.seriesCollection == null) {
-            console.log(`Connect to mongo first: ${socket.id}`)
+            console.error(`Connect to mongo first: ${socket.id}`)
         } else {
             this.watchMeasurementColletion();
         }
@@ -114,7 +114,7 @@ class ThinEdgeBackend {
             }
             ThinEdgeBackend.measurementCollection.find(query).limit(MAX_MEASUREMENT).sort({datetime: 1}).toArray(function(err, items) {
                 if (err) {
-                    console.log ("Can't retrieve measurements!")
+                    console.error ("Can't retrieve measurements!")
                     throw err;
                 }
                 res.status(200).json(items);
@@ -129,7 +129,7 @@ class ThinEdgeBackend {
             }
             ThinEdgeBackend.measurementCollection.find(query).limit(MAX_MEASUREMENT).sort({datetime: 1}).toArray(function(err, items) {
                 if (err) {
-                    console.log ("Can't retrieve measurements!")
+                    console.error ("Can't retrieve measurements!")
                     throw err;
                 }
                 res.status(200).json(items);
@@ -181,19 +181,19 @@ class ThinEdgeBackend {
                 stdoutChunks = stdoutChunks.concat(data);
             });
             child.stderr.on('data', (data) => {
-                console.error(`stderr: ${data}`);
+                console.error(`Output stderr: ${data}`);
                 res.status(500).json(data);
                 sent = true;
             });
     
             child.on('error', function (err) {
-                console.log('Error : ' + err);
+                console.error('Error : ' + err);
                 res.status(500).json(err);
                 sent = true;
             });
     
             child.stdout.on('end', (data) => {
-                console.log('stdout:', Buffer.concat(stdoutChunks).toString());
+                console.log('Output stdout:', Buffer.concat(stdoutChunks).toString());
                 if (!sent) {
                     let stdoutContent = Buffer.concat(stdoutChunks).toString();
                     let config = propertiesToJSON (stdoutContent)
@@ -202,7 +202,7 @@ class ThinEdgeBackend {
             });
             console.log('Retrieved configuration')
         } catch (err) {
-            console.log("Error when reading configuration: " + err)
+            console.error("Error when reading configuration: " + err)
             res.status(500).json({ data: err });
         }
     }
@@ -219,19 +219,19 @@ class ThinEdgeBackend {
                 stdoutChunks = stdoutChunks.concat(data);
             });
             child.stderr.on('data', (data) => {
-                console.error(`stderr: ${data}`);
+                console.error(`Output stderr: ${data}`);
                 res.status(500).json(data);
                 sent = true;
             });
     
             child.on('error', function (err) {
-                console.log('Error : ' + err);
+                console.error('Error : ' + err);
                 res.status(500).json(err);
                 sent = true;
             });
     
             child.stdout.on('end', (data) => {
-                console.log('stdout:', Buffer.concat(stdoutChunks).toString());
+                console.log('Output stdout:', Buffer.concat(stdoutChunks).toString());
                 if (!sent) {
                     let stdoutContent = Buffer.concat(stdoutChunks).toString();
                     stdoutContent = stdoutContent.replace( /.*defunct.*\n/g, '')
@@ -240,7 +240,7 @@ class ThinEdgeBackend {
             });
             console.log('Retrieved job status')
         } catch (err) {
-            console.log("Error when executing top: " + err)
+            console.error("Error when executing top: " + err)
             res.status(500).json({ data: err });
         }
     }
@@ -258,7 +258,7 @@ class ThinEdgeBackend {
             res.status(200).json(configuration);
             console.log('Retrieved configuration', configuration)
         } catch (err) {
-            console.log("Error when reading configuration: " + err)
+            console.error("Error when reading configuration: " + err)
             res.status(500).json({ data: err });
         }
     }
@@ -270,7 +270,7 @@ class ThinEdgeBackend {
             res.status(200).json(configuration);
             console.log('Saved configuration', configuration)
         } catch (err) {
-            console.log("Error when saving configuration: " + err)
+            console.error("Error when saving configuration: " + err)
             res.status(500).json({ data: err });
         }
     }
@@ -291,11 +291,11 @@ class ThinEdgeBackend {
     
     reset() {
         try {
-            console.log('Starting certification creation via subprocess')
+            console.log('Starting resetting ...')
             const tasks = [
                 {
                     cmd: 'echo',
-                    args: ["Starting resetting of certification via subprocess"]
+                    args: ["Starting resetting egde ..."]
                 },
                 {
                     cmd: 'sudo',
@@ -357,7 +357,7 @@ class ThinEdgeBackend {
         let deviceId = msg.deviceId
         let tenantUrl = msg.tenantUrl
         try {
-            console.log(`Starting certification creation via subprocess ${deviceId}, ${tenantUrl}`)
+            console.log(`Starting configuration of edge: ${deviceId}, ${tenantUrl}`)
 
             const tasks = [
                 {
@@ -454,7 +454,7 @@ class ThinEdgeBackend {
                 {
                     cmd: 'sudo',
                     args: ['tedge', 'connect', 'c8y'],
-                    continueOnError: false
+                    continueOnError: true
                 },
                 {
                     cmd: 'sudo',
