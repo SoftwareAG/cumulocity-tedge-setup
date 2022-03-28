@@ -112,7 +112,7 @@ export class SetupComponent implements OnInit {
   async downloadCertificate() {
     this.commandTerminal = "Download Certificate  ..."
     try {
-      const data = await this.edgeService.downloadCertificate()
+      const data = await this.edgeService.downloadCertificate("blob")
       const url= window.URL.createObjectURL(data);
       window.open(url);
       console.log("New download:", url)

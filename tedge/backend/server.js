@@ -123,7 +123,7 @@ app.get("/apps/*", function (req, res) {
     console.log ("Ignore request!");
     res.status(200).json({ result: "OK" });
 });
-app.get("/tenant/*", function (req, res) {
+app.get("/tenant/loginOptions", function (req, res) {
     console.log ("Ignore request!");
     res.status(200).json({ result: "OK" });
 });

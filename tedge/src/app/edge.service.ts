@@ -14,7 +14,7 @@ const PROXY_CONFIG_URL = '/config';
 const DOWNLOADCERTIFICATE_URL = "/api/certificate";
 const MEASUREMENT_URL = "/api/measurement";
 const STATUS_URL = "/api/status";
-const SERIES_URL =  "/api/series";
+const SERIES_URL = "/api/series";
 
 @Injectable({
   providedIn: 'root'
@@ -47,7 +47,7 @@ export class EdgeService {
         }
       });
       this.http
-        .get<RawMeasurment[]>(MEASUREMENT_URL, { params: params} )
+        .get<RawMeasurment[]>(MEASUREMENT_URL, { params: params })
         .toPromise()
         .then((res: any[]) => {
           // Success
@@ -71,7 +71,7 @@ export class EdgeService {
         }
       });
       this.http
-        .get<RawMeasurment[]>(MEASUREMENT_URL, { params: params} )
+        .get<RawMeasurment[]>(MEASUREMENT_URL, { params: params })
         .toPromise()
         .then((res: any[]) => {
           // Success
@@ -97,7 +97,7 @@ export class EdgeService {
 
   getRealtimeMeasurements(): Observable<RawMeasurment> {
     this.socket.emit('new-measurement', 'start');
-    const obs = this.socket.fromEvent <string>('new-measurement').pipe( map ( m => JSON.parse(m)))
+    const obs = this.socket.fromEvent<string>('new-measurement').pipe(map(m => JSON.parse(m)))
     return obs;
   }
 
@@ -164,7 +164,7 @@ export class EdgeService {
       })
   }
 
-  downloadCertificate(): any {
+  downloadCertificate(t: string): Promise<any |Object> {
     const promise = new Promise((resolve, reject) => {
       const apiURL = DOWNLOADCERTIFICATE_URL;
       const params = new HttpParams({
@@ -172,8 +172,14 @@ export class EdgeService {
           deviceId: this.edgeConfiguration['device.id'],
         }
       });
+      let options: any;
+      if ( t == "text"){
+        options = { params: params, responseType: 'text' }
+      } else {
+        options = { params: params, responseType: 'blob' as 'json' }
+      }
       this.http
-        .get(apiURL, { params: params, responseType: 'blob' as 'json' })
+        .get(apiURL, options)
         .toPromise()
         .then((res: any) => {
           // Success
@@ -199,7 +205,8 @@ export class EdgeService {
 
   }
 
-  async initializeFetchClient(): Promise<IFetchResponse> {
+
+  initFetchClient(): Promise<any | Object> {
     const auth = new BasicAuth({
       user: this.edgeConfiguration.username,
       password: this.edgeConfiguration.password,
@@ -214,6 +221,17 @@ export class EdgeService {
       proxy: 'https://' + this.edgeConfiguration['c8y.url']
     }
 
+    let promise = this.http.post(PROXY_CONFIG_URL, params)
+      .toPromise()
+      .then(response => {
+        //console.log ("Resulting cmd:", response);
+        return response;
+      })
+      .catch(err => console.log("Could not set backend proxy"))
+    return promise
+  }
+
+  login(): Promise<IFetchResponse> {
     const options: IFetchOptions = {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
@@ -228,22 +246,36 @@ export class EdgeService {
         console.log("Could not login:" + err.message)
         return err;
       })
+    return loginPromise;
+  }
 
-    let promise = this.http.post(PROXY_CONFIG_URL, params)
-      .toPromise()
+  async uploadCertificate(): Promise <Object| any>{
+    let res = await this.login();
+    let body = await res.json();
+    let currentTenant = body.name;
+    let certificate_url = `/tenant/tenants/${currentTenant}/trusted-certificates`
+    console.log("Response body from login:", body)
+
+    let cert = await this.downloadCertificate("text");
+    console.log("Response body from certificate:", cert)
+    const options: IFetchOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({certInPemFormat: cert, "autoRegistrationEnabled": true, status: "ENABLED", name:this.edgeConfiguration["device.id"]})
+    };
+    
+    //console.log("Upload certificate:", certificate_url, cert)
+
+    let uploadPromise: Promise<IFetchResponse> = this.fetchClient.fetch(certificate_url, options)
       .then(response => {
         //console.log ("Resulting cmd:", response);
         return response;
       })
-      .catch(err => console.log("Could not set backend proxy"))
-      .then((success) => {
-        return loginPromise;
+      .catch(err => {
+        console.log("Could not upload certificate:" + err.message)
+        return err;
       })
-    return promise
-  }
-
-  updateCertificate(name: any, description: any, isComplex: any) {
-    throw new Error('Method not implemented.');
+    return uploadPromise; 
   }
 
   // Error handling

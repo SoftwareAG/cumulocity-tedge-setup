@@ -256,7 +256,7 @@ class ThinEdgeBackend {
             let str = rawdata.toString()
             configuration = JSON.parse(str);
             res.status(200).json(configuration);
-            console.log('Retrieved configuration', configuration)
+            console.debug('Retrieved configuration', configuration)
         } catch (err) {
             console.error("Error when reading configuration: " + err)
             res.status(500).json({ data: err });

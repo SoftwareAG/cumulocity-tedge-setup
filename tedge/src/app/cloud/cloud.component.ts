@@ -63,18 +63,28 @@ export class CloudComponent implements OnInit {
     });
   }
 
-  async login() {
+  async updateCloudConfiguration(){
     const up = {
       'c8y.url': this.loginForm.value.tenantUrl,
       username: this.loginForm.value.username,
       password: this.loginForm.value.password,
     }
     this.edgeService.updateEdgeConfiguration(up);
+    let res = await this.edgeService.initFetchClient();
+  }
+
+  async login() {
+    this.updateCloudConfiguration();
 
     try {
-      const res = await this.edgeService.initializeFetchClient()
-      console.log("Login response:", res)
-      this.alertService.success("Could log in to cloud tenant")
+      const res = await this.edgeService.login()
+      console.log("Login response:", res )
+      if (res.status < 300){
+        this.alertService.success("Could log in to cloud tenant")
+
+      } else {
+        this.alertService.danger("Failed to login!")
+      }
     } catch (err) {
       this.alertService.danger("Failed to login: " + err.message)
     }
@@ -91,26 +101,33 @@ export class CloudComponent implements OnInit {
               value: data[key]
             })
         });
-
-      // this.rows.push(
-      //     {
-      //       name: "Samstag",
-      //       value: "10:00"
-      //     },
-      //     {
-      //       name: "Sonntag",
-      //       value: "12:00"
-      //     },
-      // )
       this.rows$ = new Observable<RowStructure[]> (observer => {
         observer.next(this.rows);
         observer.complete();
       })
         //console.log("Retrieved cloud data:", data)
     } catch (err) {
-      this.alertService.danger("Failed to retrieve details: " + err.message)
+      this.alertService.danger("Failed to retrieve details, device not yet registered!" )
     }
   }
+
+  async upload() {
+    this.updateCloudConfiguration();
+
+    try {
+      const res = await this.edgeService.uploadCertificate()
+      console.log("Upload response:", res)
+      if (res.status < 300){
+        this.alertService.success("Uploaded certificate to cloud tenant")
+      } else {
+        this.alertService.danger("Failed to upload!")
+      }
+    } catch (err) {
+      this.alertService.danger("Failed to upload certificate: " + err.message)
+    }
+
+  }
+  
 
   getDefaultColumns(): Column[] {
     return [

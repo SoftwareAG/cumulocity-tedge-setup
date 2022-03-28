@@ -101,11 +101,11 @@ export class ManageCertificateComponent implements OnInit {
 
   async updateCertificate(): Promise<void> {
     try {
-      const res = await this.edgeService.updateCertificate(
-        this.formGroupStepOne.value.name,
-        this.formGroupStepOne.value.description,
-        this.formGroupStepOne.value.isComplex
-      );
+      // const res = await this.edgeService.updateCertificate(
+      //   this.formGroupStepOne.value.name,
+      //   this.formGroupStepOne.value.description,
+      //   this.formGroupStepOne.value.isComplex
+      // );
       this.closeStepper();
     } catch (error) {
       console.log(error);
