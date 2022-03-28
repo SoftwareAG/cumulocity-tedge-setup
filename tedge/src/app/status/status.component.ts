@@ -1,5 +1,9 @@
 import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Column, ColumnDataType, DisplayOptions, Pagination } from '@c8y/ngx-components';
+import { Observable } from 'rxjs';
+import { properCase, unCamelCase } from '../cloud/cloud-helper';
 import { EdgeService } from '../edge.service';
+import { RowStructure } from '../property.model';
 //import { Terminal } from "xterm";
 
 @Component({
@@ -9,38 +13,69 @@ import { EdgeService } from '../edge.service';
   encapsulation: ViewEncapsulation.None,
 })
 export class StatusComponent implements OnInit {
-//  public term: Terminal;
+  columns: Column[];
   container: HTMLElement;
-  status: string;
-  configuration: string
-  constructor(private edgeService: EdgeService,) { }
+  serviceStatus: string;
+  configuration: string;
+  rows$: Observable<RowStructure[]>;
+  pagination: Pagination = {
+    pageSize: 30,
+    currentPage: 1,
+  };
 
-  
-  @ViewChild('myTerminal', {static: false}) terminalDiv: ElementRef;
+  displayOptions: DisplayOptions = {
+    bordered: true,
+    striped: true,
+    filter: false,
+    gridHeader: true
+  };
+
+  constructor(private edgeService: EdgeService) {
+    this.columns = this.getDefaultColumns();
+  }
 
   ngOnInit() {
-    this.edgeService.getEdgeConfiguration().then( data => {
-      //console.log ("Result configuration", data )
-      const remove = ['password'];
-
+    this.edgeService.getEdgeConfiguration().then(data => {
+      console.log ("Result configuration", data )
+      let  rows: RowStructure[] = [];
       Object.keys(data)
-        .filter(key => remove.includes(key))
-        .forEach(key => delete data[key]);
-      this.configuration =  data //JSON.stringify(data, null, "\t")
+        .forEach(key => {
+          //console.log ("Row configuration", key, unCamelCase(key), unCamelCase(key), data[key] )
+          rows.push(
+            {
+              name: key,
+              value: data[key]
+            })
+        });
+      console.log ("Result configuration", rows )
+      this.rows$ = new Observable<RowStructure[]>(observer => {
+        observer.next(rows);
+        observer.complete();
+      })
+      this.edgeService.getEdgeServiceStatus().then( data => {
+        console.log ("Result status", data )
+        this.serviceStatus =  data.result
+      })
     })
-
-    this.edgeService.getEdgeStatus().then( data => {
-      console.log ("Result status", data )
-      this.status =  data.result
-    })
-
   }
-/*   ngAfterViewInit (){
-    this.term = new Terminal();
-    this.term.open(this.terminalDiv.nativeElement);
-    this.term.writeln('Welcome to xterm.js');
-    this.term.onData( (data) => {
-      this.term.write(data);
-   }); */
 
+  getDefaultColumns(): Column[] {
+    return [
+      {
+        name: 'name',
+        header: 'Name',
+        path: 'name',
+        filterable: true,
+      },
+      {
+        header: 'Value',
+        name: 'value',
+        sortable: true,
+        filterable: true,
+        path: 'value',
+        dataType: ColumnDataType.TextShort,
+      },
+    ];
   }
+
+}

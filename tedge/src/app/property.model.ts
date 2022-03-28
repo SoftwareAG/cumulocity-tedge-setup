@@ -13,7 +13,6 @@ export interface EdgeCMDProgress {
   cmd: string
 }
 
-
 export interface RawMeasurment {
   _id?: string
   topic?: string
@@ -40,3 +39,8 @@ export interface SpanListItem {
   spanInSeconds: number;
   displayUnit?: string;
 }
+
+export interface RowStructure {
+  name: string;
+  value: string;
+};

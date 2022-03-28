@@ -207,7 +207,7 @@ class ThinEdgeBackend {
         }
     }
 
-    static getStatus(req, res) {
+    static getEdgeServiceStatus(req, res) {
         try {
             let sent = false;
             var stdoutChunks = [];

@@ -4,13 +4,8 @@ import { IManagedObject, IMeasurementCreate } from '@c8y/client';
 import { ActionControl, AlertService, Column, ColumnDataType, DisplayOptions, Pagination } from '@c8y/ngx-components';
 import { Observable } from 'rxjs';
 import { EdgeService } from '../edge.service';
+import { RowStructure } from '../property.model';
 import { properCase, unCamelCase } from './cloud-helper';
-//import { ThinEdgeConfiguration } from '../property.model';
-
-export type RowStructure = {
-  name: string;
-  value: string;
-};
 
 @Component({
   selector: 'app-cloud',
@@ -27,7 +22,6 @@ export class CloudComponent implements OnInit {
   loginForm: FormGroup;
   edgeConfiguration: any = {}
   rows$: Observable <RowStructure[]> ;
-  rows: RowStructure[] = [];
   pagination: Pagination = {
     pageSize: 30,
     currentPage: 1,
@@ -91,18 +85,19 @@ export class CloudComponent implements OnInit {
 
     try {
       const { data, res } = await this.edgeService.getDetailsCloudDevice(this.edgeConfiguration['device.id'])
+      let rows: RowStructure[] = [];
       // ignore those values that are object,because they look ugly when printed    
       Object.keys(data)
         .filter(key => typeof data[key] != 'object')
         .forEach(key => {
-          this.rows.push(
+          rows.push(
             {
               name: properCase(unCamelCase(key)),
               value: data[key]
             })
         });
       this.rows$ = new Observable<RowStructure[]> (observer => {
-        observer.next(this.rows);
+        observer.next(rows);
         observer.complete();
       })
         //console.log("Retrieved cloud data:", data)
@@ -128,7 +123,6 @@ export class CloudComponent implements OnInit {
 
   }
   
-
   getDefaultColumns(): Column[] {
     return [
       {

@@ -13,7 +13,7 @@ const ANALYTICS_CONFIGURATION_URL = '/api/analyticsConfiguration'
 const PROXY_CONFIG_URL = '/config';
 const DOWNLOADCERTIFICATE_URL = "/api/certificate";
 const MEASUREMENT_URL = "/api/measurement";
-const STATUS_URL = "/api/status";
+const SERVICE_URL = "/api/services";
 const SERIES_URL = "/api/series";
 
 @Injectable({
@@ -117,9 +117,9 @@ export class EdgeService {
     console.log("Updated edgeConfiguration:", edgeConfiguration, this.edgeConfiguration);
   }
 
-  getEdgeStatus(): Promise<any> {
+  getEdgeServiceStatus(): Promise<any> {
     return this.http
-      .get<any>(STATUS_URL)
+      .get<any>(SERVICE_URL)
       .toPromise()
       .then(res => {
         console.log("New status", res)

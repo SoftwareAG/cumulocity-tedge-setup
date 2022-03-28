@@ -83,11 +83,11 @@ app.get("/api/measurement", function (req, res) {
     thinEdgeBackend.ThinEdgeBackend.getMeasurements(req,res)
 });
 
-/*  "/api/status"
-*   GET: status 
+/*  "/api/services"
+*   GET: services 
 */
-app.get("/api/status", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getStatus(req,res)
+app.get("/api/services", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getEdgeServiceStatus(req,res)
 });
 
 /*  "/config"

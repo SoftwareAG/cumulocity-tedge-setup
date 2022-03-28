@@ -25,7 +25,8 @@ export class SetupComponent implements OnInit {
   configurationForm: FormGroup
   edgeConfiguration: any = {}
 
-  constructor(private edgeService: EdgeService, private alertService: AlertService, private formBuilder: FormBuilder) { }
+  constructor(private edgeService: EdgeService, private alertService: AlertService, private formBuilder: FormBuilder) {
+   }
 
   ngOnInit() {
     this.initalizeTerminal()
