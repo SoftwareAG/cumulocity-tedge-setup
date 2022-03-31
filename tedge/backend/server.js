@@ -17,12 +17,14 @@ const thinEdgeBackend = require('./thinEdgeBackend.js');
 
 const options = createProxyMiddleware(
     {
-        target: 'https://ck2.eu-latest.cumulocity.com',
+        target: 'https://demo.cumulocity.com',
         changeOrigin: true,
         secure: true,
         pathRewrite: { '^/c8y': '' }
     }
-);
+    );
+    
+const CERTIFICATE = "/etc/tedge/device-certs/tedge-certificate.pem";
 
 // set up proxy 
 app.use('/c8y', options);
@@ -52,35 +54,47 @@ server.listen(process.env.PORT || 9080, function () {
 });
 
 
-/*  "/api/download/certificate"
- *   GET: certificate 
- */
-app.get("/api/certificate", function (req, res) {
+/*  "/api/configuration/certificate"
+*   GET: certificate 
+*/
+app.get("/api/configuration/certificate", function (req, res) {
     let deviceId = req.query.deviceId;
     console.log(`Download certificate for : ${deviceId}`);
-    res.status(200).sendFile("/etc/tedge/device-certs/tedge-certificate.pem");
+    res.status(200).sendFile(CERTIFICATE);
+});
+
+/*  "/api/edgeConfiguration"
+*   GET: edgeConfiguration 
+*/
+app.get("/api/configuration/edge", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getEdgeConfiguration(req,res)
+});
+
+/*  "/analyticsConfiguration"
+*   POST: Change analytics widget configuration 
+*/
+app.post("/api/configuration/analytics", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.setAnalyticsConfiguration(req,res)
+});
+
+/*  "/analyticsConfiguration"
+*   GET: Get analytics widget configuration 
+*/
+app.get("/api/configuration/analytics", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getAnalyticsConfiguration(req,res)
+});
+/*  "/api/getLastMeasurements"
+*   GET: getLastMeasurements 
+*/
+app.get("/api/analytics/measurement", function (req, res) {
+    thinEdgeBackend.ThinEdgeBackend.getMeasurements(req,res)
 });
 
 /*  "/api/series"
 *   GET: series 
 */
-app.get("/api/series", function (req, res) {
+app.get("/api/analytics/series", function (req, res) {
     thinEdgeBackend.ThinEdgeBackend.getSeries(req,res)
-});
-
-
-/*  "/api/edgeConfiguration"
-*   GET: edgeConfiguration 
-*/
-app.get("/api/edgeConfiguration", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getEdgeConfiguration(req,res)
-});
-
-/*  "/api/getLastMeasurements"
-*   GET: getLastMeasurements 
-*/
-app.get("/api/measurement", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getMeasurements(req,res)
 });
 
 /*  "/api/services"
@@ -93,27 +107,13 @@ app.get("/api/services", function (req, res) {
 /*  "/config"
  *   POST: Change proxy to communicate with cloud instance. This is required to avoid CORS errors
  */
-app.post("/config", function (req, res) {
+app.post("/configuration", function (req, res) {
     let proxy = req.body.proxy
     console.log(`Setting proxy: ${proxy}`);
     options.target = proxy
     // set up proxy 
     app.use('/c8y', options);
     res.status(200).json({ result: "OK" });
-});
-
-/*  "/analyticsConfiguration"
- *   POST: Change analytics widget configuration 
- */
-app.post("/api/analyticsConfiguration", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.setAnalyticsConfiguration(req,res)
-});
-
-/*  "/analyticsConfiguration"
- *   GET: Get analytics widget configuration 
- */
-app.get("/api/analyticsConfiguration", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getAnalyticsConfiguration(req,res)
 });
 
 /* 
@@ -137,6 +137,9 @@ app.get("/application/*", function (req, res) {
     res.status(200).json(result);
 });
 
+/* 
+* open socket to receive cmmand from web-ui and send back streamed measurements
+*/
 io.on('connection', function (socket) {
     console.log(`New connection from web ui: ${socket.id}`);
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)

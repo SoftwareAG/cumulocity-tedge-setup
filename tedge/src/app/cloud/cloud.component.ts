@@ -106,23 +106,6 @@ export class CloudComponent implements OnInit {
     }
   }
 
-  async upload() {
-    this.updateCloudConfiguration();
-
-    try {
-      const res = await this.edgeService.uploadCertificate()
-      console.log("Upload response:", res)
-      if (res.status < 300){
-        this.alertService.success("Uploaded certificate to cloud tenant")
-      } else {
-        this.alertService.danger("Failed to upload!")
-      }
-    } catch (err) {
-      this.alertService.danger("Failed to upload certificate: " + err.message)
-    }
-
-  }
-  
   getDefaultColumns(): Column[] {
     return [
       {

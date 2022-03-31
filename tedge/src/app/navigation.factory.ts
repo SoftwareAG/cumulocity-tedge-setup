@@ -16,6 +16,14 @@ export class EdgeNavigationFactory implements NavigatorNodeFactory {
             routerLinkExact: false
         });
 
+        let Control: NavigatorNode = new NavigatorNode({
+            label: _('Control'),
+            icon: 'rocket',
+            path: '/control',
+            priority: 2,
+            routerLinkExact: false
+        });
+
         let Status: NavigatorNode = new NavigatorNode({
             label: _('Status'),
             icon: 'info-circle',
@@ -44,7 +52,7 @@ export class EdgeNavigationFactory implements NavigatorNodeFactory {
             label: _('Edge'),
             name: 'egde',
             priority: 200,
-            children: [Setup, Status],
+            children: [Setup, Control, Status],
             icon: 'upload',
             routerLinkExact: false
         });

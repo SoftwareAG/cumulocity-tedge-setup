@@ -16,6 +16,7 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { EdgeNavigationFactory } from './navigation.factory';
 import { SetupComponent } from './setup/setup.component';
 import { StatusComponent } from './status/status.component';
+import { ControlComponent } from './control/control.component';
 import { ChartingWidget } from './analysis/charting-widget.component';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartingConfigComponent } from './analysis/charting-config.component';
@@ -33,7 +34,8 @@ const config: SocketIoConfig = { url: location.origin, options: {} };
       [{ path: 'analysis', component: AnalysisComponent }, 
       { path: 'cloud', component: CloudComponent },
       { path: 'setup', component: SetupComponent },
-      { path: 'status', component: StatusComponent }],
+      { path: 'status', component: StatusComponent },
+      { path: 'control', component: ControlComponent }],
       { enableTracing: false, useHash: true }
     ),
     CoreModule.forRoot(),
@@ -56,7 +58,11 @@ const config: SocketIoConfig = { url: location.origin, options: {} };
     },
   ],
   bootstrap: [BootstrapComponent],
-  declarations: [CertificateComponent, AnalysisComponent, ManageCertificateComponent, CloudComponent, SetupComponent, StatusComponent, ChartingWidget, ChartingConfigComponent]
+  declarations: [CertificateComponent, AnalysisComponent, 
+    ManageCertificateComponent, CloudComponent, 
+    SetupComponent, StatusComponent, 
+    ControlComponent,ChartingWidget, 
+    ChartingConfigComponent]
  })
 export class AppModule { }
 

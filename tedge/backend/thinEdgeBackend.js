@@ -294,10 +294,6 @@ class ThinEdgeBackend {
             console.log('Starting resetting ...')
             const tasks = [
                 {
-                    cmd: 'echo',
-                    args: ["Starting resetting egde ..."]
-                },
-                {
                     cmd: 'sudo',
                     args: ["tedge", "cert", "remove"]
                 },
@@ -447,10 +443,6 @@ class ThinEdgeBackend {
         try {
             console.log(`Starting edge ${this.cmdInProgress}...`)
             const tasks = [
-                {
-                    cmd: 'echo',
-                    args: ["Starting connect of c8y"]
-                },
                 {
                     cmd: 'sudo',
                     args: ['tedge', 'connect', 'c8y'],

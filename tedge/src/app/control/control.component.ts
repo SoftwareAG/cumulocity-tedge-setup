@@ -7,11 +7,11 @@ import { EdgeCMDProgress } from '../property.model';
 
 
 @Component({
-  selector: 'app-setup',
-  templateUrl: './setup.component.html',
-  styleUrls: ['./setup.component.scss']
+  selector: 'app-control',
+  templateUrl: './control.component.html',
+  styleUrls: ['./control.component.scss']
 })
-export class SetupComponent implements OnInit {
+export class ControlComponent implements OnInit {
   refresh: EventEmitter<any> = new EventEmitter();
   public showCreateCertificate: boolean = false;
   edgeCMDProgress$: Observable<EdgeCMDProgress>;
@@ -23,7 +23,6 @@ export class SetupComponent implements OnInit {
   commandTerminal: string
   command: string
   configurationForm: FormGroup
-  loginForm: FormGroup;
   edgeConfiguration: any = {}
 
   constructor(private edgeService: EdgeService, private alertService: AlertService, private formBuilder: FormBuilder) {
@@ -60,11 +59,6 @@ export class SetupComponent implements OnInit {
       tenantUrl: [(this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''), Validators.required],
       deviceId: [(this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''), Validators.required],
     });
-
-    this.loginForm = this.formBuilder.group({
-      username: [this.edgeConfiguration.username ? this.edgeConfiguration.username : ''],
-      password: [this.edgeConfiguration.password ? this.edgeConfiguration.password : ''],
-    });
   }
 
   startEdge() {
@@ -81,23 +75,6 @@ export class SetupComponent implements OnInit {
     this.commandTerminal = "Stopping Thin Edge ..."
   }
 
-  configureEdge() {
-    const up = {
-      'device.id': this.configurationForm.value.deviceId,
-      'c8y.url': this.configurationForm.value.tenantUrl,
-    }
-    this.edgeService.updateEdgeConfiguration (up);
-    this.getNewConfiguration()
-    this.command = 'configure'
-    this.initalizeTerminal()
-    let url =  this.configurationForm.controls['tenantUrl'].value.replace('https://','').replace('/', '')
-    this.edgeService.sendCMDToEdge({
-      cmd: this.command,
-      deviceId: this.configurationForm.value.deviceId,
-      tenantUrl: url
-    })
-    this.commandTerminal = "Configure Thin Edge ..."
-  }
   getNewConfiguration() {
     this.edgeService.getEdgeConfiguration().then ( config => {
       this.edgeConfiguration = config
@@ -106,55 +83,6 @@ export class SetupComponent implements OnInit {
         deviceId: this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: '',
       })
     })
-  }
-
-  resetEdge() {
-    this.command = 'reset'
-    this.initalizeTerminal()
-    this.edgeService.sendCMDToEdge({ cmd: this.command })
-    this.getNewConfiguration()
-    this.commandTerminal = "Resetting Thin Edge ..."
-  }
-
-  async downloadCertificate() {
-    this.commandTerminal = "Download Certificate  ..."
-    try {
-      const data = await this.edgeService.downloadCertificate("blob")
-      const url= window.URL.createObjectURL(data);
-      window.open(url);
-      console.log("New download:", url)
-      //window.location.assign(res.url);
-    } catch (error) {
-      console.log(error);
-      this.alertService.danger(`Download failed!`)
-    }
-  }
-
-  async updateCloudConfiguration(){
-    const up = {
-      'c8y.url': this.loginForm.value.tenantUrl,
-      username: this.loginForm.value.username,
-      password: this.loginForm.value.password,
-    }
-    this.edgeService.updateEdgeConfiguration(up);
-    let res = await this.edgeService.initFetchClient();
-  }
-
-  async upload() {
-    this.updateCloudConfiguration();
-
-    try {
-      const res = await this.edgeService.uploadCertificate()
-      console.log("Upload response:", res)
-      if (res.status < 300){
-        this.alertService.success("Uploaded certificate to cloud tenant")
-      } else {
-        this.alertService.danger("Failed to upload certificate!")
-      }
-    } catch (err) {
-      this.alertService.danger("Failed to upload certificate: " + err.message)
-    }
-
   }
 
   onChange (event) {

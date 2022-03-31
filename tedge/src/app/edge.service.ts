@@ -7,14 +7,14 @@ import { Observable, from } from 'rxjs';
 import { map } from "rxjs/operators"
 
 const C8Y_URL = 'c8y';
+const PROXY_CONFIG_URL = '/configuration';
 const LOGIN_URL = `/tenant/currentTenant`
-const EDGE_CONFIGURATION_URL = '/api/edgeConfiguration'
-const ANALYTICS_CONFIGURATION_URL = '/api/analyticsConfiguration'
-const PROXY_CONFIG_URL = '/config';
-const DOWNLOADCERTIFICATE_URL = "/api/certificate";
-const MEASUREMENT_URL = "/api/measurement";
+const EDGE_CONFIGURATION_URL = '/api/configuration/edge'
+const ANALYTICS_CONFIGURATION_URL = '/api/configuration/analytics'
+const DOWNLOADCERTIFICATE_URL = "/api/configuration/certificate";
+const MEASUREMENT_URL = "/api/analytics/measurement";
+const SERIES_URL = "/api/analytics/series";
 const SERVICE_URL = "/api/services";
-const SERIES_URL = "/api/series";
 
 @Injectable({
   providedIn: 'root'
