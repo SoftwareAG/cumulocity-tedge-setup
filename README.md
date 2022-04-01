@@ -11,6 +11,14 @@ This solution consists of 3 components
 * mqtt_colletctor: listens to measurements on all topics of the mosquitto broker and sends them to the mongo db
 * mongodb: stores the measurements in a colletion, to be retrieved by the web-ui. All measurements have time-to-live (TTL) of 300. This can be changed
 
+
+## Build thin edge binaries
+
+```
+cd tedge
+docker build --file Dockerfile-build --output bin .
+```
+
 ## Run solution
 
 ```
@@ -41,6 +49,3 @@ Then you can access the analytics dashboard : http://localhost:9080/#/analytics
 
 and change the settings of the chart:
 <img width="1399" alt="06-Change settings line chart" src="https://user-images.githubusercontent.com/29702059/159692831-7702c60a-e88e-48d1-b6e6-d8b24609e744.png">
-
-
-
