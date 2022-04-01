@@ -17,7 +17,7 @@ RUN apk add collectd-mqtt
 RUN apk add mosquitto-libs
 
 #ENVS
-ENV VERSION=0.5.4
+ENV VERSION=0.6.1
 ENV ARCH=amd64
 
 #Add user and groups
@@ -114,7 +114,7 @@ RUN echo "export MONGO_PORT=$MONGO_PORT" >>/app/tedge/tedge-ui-env
 RUN npm install -g @angular/cli && npm install
 RUN ng config -g cli.warnings.versionMismatch false
 RUN ng build  --output-path=/app/tedge/dist/cumulocity-tedge-setup
-# Clean up
+# # Clean up
 RUN rm -r /app/tedge/src
 RUN rm -r /app/tedge/etc
 

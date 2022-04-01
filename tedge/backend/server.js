@@ -10,24 +10,36 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 // spawn
 const { spawn } = require("child_process");
 const events = require('events');
-const socketIO  = require('socket.io')
+const socketIO = require('socket.io')
 // Create new instance of the express server
 const app = express();
 const thinEdgeBackend = require('./thinEdgeBackend.js');
+const CERTIFICATE = "/etc/tedge/device-certs/tedge-certificate.pem";
+const DEMO_TENANT = "https://demo.cumulocity.com"
 
-const options = createProxyMiddleware(
+function customRouter(req) {
+    let url = DEMO_TENANT
+    if (req.query) {
+        url = `https://${req.query.proxy}`;
+        console.log("Setting target url to: ", url, req.path);
+    }
+    return url
+}
+
+const proxyToTargetUrl = createProxyMiddleware(
     {
-        target: 'https://demo.cumulocity.com',
+        target: "https://demo.cumulocity.com",
         changeOrigin: true,
         secure: true,
-        pathRewrite: { '^/c8y': '' }
+        pathRewrite: { '^/c8y': '' },
+        router: customRouter,
+        logLevel: 'debug'
     }
-    );
-    
-const CERTIFICATE = "/etc/tedge/device-certs/tedge-certificate.pem";
+)
+
 
 // set up proxy 
-app.use('/c8y', options);
+app.use('/c8y', proxyToTargetUrl);
 
 // Define the JSON parser as a default way 
 // to consume and produce data through the 
@@ -67,69 +79,57 @@ app.get("/api/configuration/certificate", function (req, res) {
 *   GET: edgeConfiguration 
 */
 app.get("/api/configuration/edge", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getEdgeConfiguration(req,res)
+    thinEdgeBackend.ThinEdgeBackend.getEdgeConfiguration(req, res)
 });
 
 /*  "/analyticsConfiguration"
 *   POST: Change analytics widget configuration 
 */
 app.post("/api/configuration/analytics", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.setAnalyticsConfiguration(req,res)
+    thinEdgeBackend.ThinEdgeBackend.setAnalyticsConfiguration(req, res)
 });
 
 /*  "/analyticsConfiguration"
 *   GET: Get analytics widget configuration 
 */
 app.get("/api/configuration/analytics", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getAnalyticsConfiguration(req,res)
+    thinEdgeBackend.ThinEdgeBackend.getAnalyticsConfiguration(req, res)
 });
 /*  "/api/getLastMeasurements"
 *   GET: getLastMeasurements 
 */
 app.get("/api/analytics/measurement", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getMeasurements(req,res)
+    thinEdgeBackend.ThinEdgeBackend.getMeasurements(req, res)
 });
 
 /*  "/api/series"
 *   GET: series 
 */
 app.get("/api/analytics/series", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getSeries(req,res)
+    thinEdgeBackend.ThinEdgeBackend.getSeries(req, res)
 });
 
 /*  "/api/services"
 *   GET: services 
 */
 app.get("/api/services", function (req, res) {
-    thinEdgeBackend.ThinEdgeBackend.getEdgeServiceStatus(req,res)
-});
-
-/*  "/config"
- *   POST: Change proxy to communicate with cloud instance. This is required to avoid CORS errors
- */
-app.post("/configuration", function (req, res) {
-    let proxy = req.body.proxy
-    console.log(`Setting proxy: ${proxy}`);
-    options.target = proxy
-    // set up proxy 
-    app.use('/c8y', options);
-    res.status(200).json({ result: "OK" });
+    thinEdgeBackend.ThinEdgeBackend.getEdgeServiceStatus(req, res)
 });
 
 /* 
 *   Empty dummy responses to avoid errors in the browser console 
 */
 app.get("/apps/*", function (req, res) {
-    console.log ("Ignore request!");
+    console.log("Ignore request!");
     res.status(200).json({ result: "OK" });
 });
 app.get("/tenant/loginOptions", function (req, res) {
-    console.log ("Ignore request!");
+    console.log("Ignore request!");
     res.status(200).json({ result: "OK" });
 });
 
 app.get("/application/*", function (req, res) {
-    console.log ("Ignore request!");
+    console.log("Ignore request!");
     const result = {
         "applications": [
         ]
@@ -144,17 +144,17 @@ io.on('connection', function (socket) {
     console.log(`New connection from web ui: ${socket.id}`);
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
-/*         msg = JSON.parse(message)
-        console.log(`New cmd: ${message}`, message.cmd, msg.cmd);
-        message = msg */
+        /*         msg = JSON.parse(message)
+                console.log(`New cmd: ${message}`, message.cmd, msg.cmd);
+                message = msg */
         console.log(`New cmd: ${message}`, message.cmd);
-        if (message.cmd == 'start')  {
+        if (message.cmd == 'start') {
             backend.start();
-        } else if (message.cmd == 'stop')  {
-            backend.stop( message);
-        } else if (message.cmd == 'configure')  {
-            backend.configure( message);
-        } else if (message.cmd == 'reset')  {
+        } else if (message.cmd == 'stop') {
+            backend.stop(message);
+        } else if (message.cmd == 'configure') {
+            backend.configure(message);
+        } else if (message.cmd == 'reset') {
             backend.reset();
         } {
             socket.emit('cmd-progress', {

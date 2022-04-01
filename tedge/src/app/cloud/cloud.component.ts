@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { IManagedObject, IMeasurementCreate } from '@c8y/client';
 import { ActionControl, AlertService, Column, ColumnDataType, DisplayOptions, Pagination } from '@c8y/ngx-components';
 import { Observable } from 'rxjs';
 import { EdgeService } from '../edge.service';
@@ -21,7 +20,7 @@ export class CloudComponent implements OnInit {
 
   loginForm: FormGroup;
   edgeConfiguration: any = {}
-  rows$: Observable <RowStructure[]> ;
+  rows$: Observable<RowStructure[]>;
   pagination: Pagination = {
     pageSize: 30,
     currentPage: 1,
@@ -40,9 +39,9 @@ export class CloudComponent implements OnInit {
     this.edgeService.getEdgeConfiguration().then(config => {
       this.edgeConfiguration = config
       this.loginForm.setValue({
-        username: [this.edgeConfiguration.username ? this.edgeConfiguration.username : ''],
-        tenantUrl: [this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url'] : ''],
-        password: [this.edgeConfiguration.password ? this.edgeConfiguration.password : ''],
+        username: this.edgeConfiguration.username ? this.edgeConfiguration.username : '',
+        tenantUrl: this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url'] : '',
+        password: this.edgeConfiguration.password ? this.edgeConfiguration.password : '',
       })
       console.log("Intialized configuration:", config)
     })
@@ -51,20 +50,20 @@ export class CloudComponent implements OnInit {
 
   initForm() {
     this.loginForm = this.formBuilder.group({
-      username: [this.edgeConfiguration.username ? this.edgeConfiguration.username : ''],
-      tenantUrl: [this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url'] : ''],
-      password: [this.edgeConfiguration.password ? this.edgeConfiguration.password : ''],
+      tenantUrl: this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url'] : '',
+      username: this.edgeConfiguration.username ? this.edgeConfiguration.username : '',
+      password: this.edgeConfiguration.password ? this.edgeConfiguration.password : '',
     });
   }
 
-  async updateCloudConfiguration(){
+  async updateCloudConfiguration() {
     const up = {
       'c8y.url': this.loginForm.value.tenantUrl,
       username: this.loginForm.value.username,
       password: this.loginForm.value.password,
     }
     this.edgeService.updateEdgeConfiguration(up);
-    let res = await this.edgeService.initFetchClient();
+    this.edgeService.initFetchClient();
   }
 
   async login() {
@@ -72,8 +71,8 @@ export class CloudComponent implements OnInit {
 
     try {
       const res = await this.edgeService.login()
-      console.log("Login response:", res )
-      if (res.status < 300){
+      console.log("Login response:", res)
+      if (res.status < 300) {
         this.alertService.success("Could log in to cloud tenant")
 
       } else {
@@ -84,7 +83,7 @@ export class CloudComponent implements OnInit {
     }
 
     try {
-      const { data, res } = await this.edgeService.getDetailsCloudDevice(this.edgeConfiguration['device.id'])
+      const data = await this.edgeService.getDetailsCloudDevice(this.edgeConfiguration['device.id'])
       let rows: RowStructure[] = [];
       // ignore those values that are object,because they look ugly when printed    
       Object.keys(data)
@@ -96,13 +95,13 @@ export class CloudComponent implements OnInit {
               value: data[key]
             })
         });
-      this.rows$ = new Observable<RowStructure[]> (observer => {
+      this.rows$ = new Observable<RowStructure[]>(observer => {
         observer.next(rows);
         observer.complete();
       })
-        //console.log("Retrieved cloud data:", data)
+      //console.log("Retrieved cloud data:", data)
     } catch (err) {
-      this.alertService.danger("Failed to retrieve details, device not yet registered!" )
+      this.alertService.danger("Failed to retrieve details, device not yet registered!")
     }
   }
 

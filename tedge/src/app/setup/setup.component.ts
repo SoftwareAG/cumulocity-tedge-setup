@@ -23,15 +23,13 @@ export class SetupComponent implements OnInit {
   commandTerminal: string
   command: string
   configurationForm: FormGroup
-  loginForm: FormGroup;
   edgeConfiguration: any = {}
 
   constructor(private edgeService: EdgeService, private alertService: AlertService, private formBuilder: FormBuilder) {
    }
 
   ngOnInit() {
-    this.initalizeTerminal()
-    this.getNewConfiguration()
+    this.initalizeTerminal('')
     this.initForm()
     this.edgeCMDProgress$ = this.edgeService.getCMDProgress()
     this.subscriptionProgress = this.edgeCMDProgress$.subscribe((st: EdgeCMDProgress) => {
@@ -55,28 +53,36 @@ export class SetupComponent implements OnInit {
       this.commandTerminal = this.commandTerminal + st
     })
   }
-  initForm() {
+
+  async initForm() {
     this.configurationForm = this.formBuilder.group({
-      tenantUrl: [(this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''), Validators.required],
-      deviceId: [(this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''), Validators.required],
+      tenantUrl: ['', Validators.required],
+      deviceId: ['', Validators.required],
+      username: [''],
+      password: [''],
     });
 
-    this.loginForm = this.formBuilder.group({
-      username: [this.edgeConfiguration.username ? this.edgeConfiguration.username : ''],
-      password: [this.edgeConfiguration.password ? this.edgeConfiguration.password : ''],
-    });
+    this.edgeConfiguration = await this.edgeService.getEdgeConfiguration();
+    this.configurationForm.setValue(this.getC());
+  }
+
+  getC() {
+    return {
+      tenantUrl: (this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: ''),
+      deviceId: (this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: ''),
+      username: this.edgeConfiguration.username ? this.edgeConfiguration.username : '',
+      password: this.edgeConfiguration.password ? this.edgeConfiguration.password : '',
+    }
   }
 
   startEdge() {
-    this.command = 'start'
-    this.initalizeTerminal()
+    this.initalizeTerminal('start')
     this.edgeService.sendCMDToEdge({ cmd: this.command })
     this.commandTerminal = "Starting Thin Edge ..."
   }
 
   stopEdge() {
-    this.command = 'stop'
-    this.initalizeTerminal()
+    this.initalizeTerminal('stop')
     this.edgeService.sendCMDToEdge({ cmd: this.command })
     this.commandTerminal = "Stopping Thin Edge ..."
   }
@@ -87,9 +93,7 @@ export class SetupComponent implements OnInit {
       'c8y.url': this.configurationForm.value.tenantUrl,
     }
     this.edgeService.updateEdgeConfiguration (up);
-    this.getNewConfiguration()
-    this.command = 'configure'
-    this.initalizeTerminal()
+    this.initalizeTerminal('configure')
     let url =  this.configurationForm.controls['tenantUrl'].value.replace('https://','').replace('/', '')
     this.edgeService.sendCMDToEdge({
       cmd: this.command,
@@ -98,21 +102,11 @@ export class SetupComponent implements OnInit {
     })
     this.commandTerminal = "Configure Thin Edge ..."
   }
-  getNewConfiguration() {
-    this.edgeService.getEdgeConfiguration().then ( config => {
-      this.edgeConfiguration = config
-      this.configurationForm.setValue ({
-        tenantUrl: this.edgeConfiguration['c8y.url'] ? this.edgeConfiguration['c8y.url']: '',
-        deviceId: this.edgeConfiguration['device.id'] ? this.edgeConfiguration['device.id']: '',
-      })
-    })
-  }
 
   resetEdge() {
-    this.command = 'reset'
-    this.initalizeTerminal()
+    this.initalizeTerminal('reset')
     this.edgeService.sendCMDToEdge({ cmd: this.command })
-    this.getNewConfiguration()
+    this.initForm()
     this.commandTerminal = "Resetting Thin Edge ..."
   }
 
@@ -132,12 +126,12 @@ export class SetupComponent implements OnInit {
 
   async updateCloudConfiguration(){
     const up = {
-      'c8y.url': this.loginForm.value.tenantUrl,
-      username: this.loginForm.value.username,
-      password: this.loginForm.value.password,
+      'c8y.url': this.configurationForm.value.tenantUrl,
+      username: this.configurationForm.value.username,
+      password: this.configurationForm.value.password,
     }
     this.edgeService.updateEdgeConfiguration(up);
-    let res = await this.edgeService.initFetchClient();
+    this.edgeService.initFetchClient();
   }
 
   async upload() {
@@ -154,7 +148,6 @@ export class SetupComponent implements OnInit {
     } catch (err) {
       this.alertService.danger("Failed to upload certificate: " + err.message)
     }
-
   }
 
   onChange (event) {
@@ -167,7 +160,9 @@ export class SetupComponent implements OnInit {
     console.log("Ignoring:", event)
     }
   }
-  initalizeTerminal() {
+
+  initalizeTerminal(cmd) {
+    this.command = cmd
     this.showStatusBar = true
     this.commandTerminal = "# "
     this.message = ""

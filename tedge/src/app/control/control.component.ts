@@ -29,7 +29,7 @@ export class ControlComponent implements OnInit {
    }
 
   ngOnInit() {
-    this.initalizeTerminal()
+    this.initalizeTerminal("")
     this.getNewConfiguration()
     this.initForm()
     this.edgeCMDProgress$ = this.edgeService.getCMDProgress()
@@ -62,15 +62,13 @@ export class ControlComponent implements OnInit {
   }
 
   startEdge() {
-    this.command = 'start'
-    this.initalizeTerminal()
+    this.initalizeTerminal('start')
     this.edgeService.sendCMDToEdge({ cmd: this.command })
     this.commandTerminal = "Starting Thin Edge ..."
   }
 
   stopEdge() {
-    this.command = 'stop'
-    this.initalizeTerminal()
+    this.initalizeTerminal('stop')
     this.edgeService.sendCMDToEdge({ cmd: this.command })
     this.commandTerminal = "Stopping Thin Edge ..."
   }
@@ -95,7 +93,8 @@ export class ControlComponent implements OnInit {
     console.log("Ignoring:", event)
     }
   }
-  initalizeTerminal() {
+  initalizeTerminal(cmd) {
+    this.command = cmd
     this.showStatusBar = true
     this.commandTerminal = "# "
     this.message = ""

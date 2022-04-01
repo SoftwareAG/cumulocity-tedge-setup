@@ -3,11 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { IExternalIdentity, Client, BasicAuth, FetchClient, IFetchOptions, IFetchResponse, IdentityService, InventoryService, IdReference } from '@c8y/client';
 import { EdgeCMDProgress, MeasurmentType, RawMeasurment } from './property.model';
 import { Socket } from 'ngx-socket-io';
-import { Observable, from } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from "rxjs/operators"
 
 const C8Y_URL = 'c8y';
-const PROXY_CONFIG_URL = '/configuration';
+const INVENTORY_URL = '/inventory/managedObjects';
+const IDENTITY_URL = '/identity/externalIds';
 const LOGIN_URL = `/tenant/currentTenant`
 const EDGE_CONFIGURATION_URL = '/api/configuration/edge'
 const ANALYTICS_CONFIGURATION_URL = '/api/configuration/analytics'
@@ -21,23 +22,10 @@ const SERVICE_URL = "/api/services";
 })
 export class EdgeService {
   private fetchClient: FetchClient;
-
   private edgeConfiguration: any = {}
-  private inventoryService: InventoryService;
-  private identityService: IdentityService;
 
   constructor(private http: HttpClient,
-    private socket: Socket) {
-    //Object.assign(this.edgeConfiguration, CONFIG_CLOUD)
-  }
-
-  /*   async loadConfiguration(): Promise<any> {
-    const config = await this.http
-    .get<ThinEdgeConfiguration>(CONFIGURATION_URL)
-    .toPromise();
-    Object.keys(config).forEach(key => { this.edgeConfiguration[key] = config[key] })
-    return config;
-  } */
+    private socket: Socket) { }
 
   getLastMeasurements(displaySpan: number): Promise<RawMeasurment[]> {
     const promise = new Promise<any[]>((resolve, reject) => {
@@ -109,12 +97,12 @@ export class EdgeService {
     return this.socket.fromEvent('cmd-result');
   }
 
-  updateEdgeConfiguration(edgeConfiguration: any) {
+  updateEdgeConfiguration(ec: any) {
     this.edgeConfiguration = {
       ...this.edgeConfiguration,
-      ...edgeConfiguration,
+      ...ec,
     }
-    console.log("Updated edgeConfiguration:", edgeConfiguration, this.edgeConfiguration);
+    console.log("Updated edgeConfiguration:", ec, this.edgeConfiguration);
   }
 
   getEdgeServiceStatus(): Promise<any> {
@@ -164,7 +152,7 @@ export class EdgeService {
       })
   }
 
-  downloadCertificate(t: string): Promise<any |Object> {
+  downloadCertificate(t: string): Promise<any | Object> {
     const promise = new Promise((resolve, reject) => {
       const apiURL = DOWNLOADCERTIFICATE_URL;
       const params = new HttpParams({
@@ -173,7 +161,7 @@ export class EdgeService {
         }
       });
       let options: any;
-      if ( t == "text"){
+      if (t == "text") {
         options = { params: params, responseType: 'text' }
       } else {
         options = { params: params, responseType: 'blob' as 'json' }
@@ -194,50 +182,58 @@ export class EdgeService {
     return promise;
   }
 
-  getDetailsCloudDevice(externalDeviceId: string) {
-    const identity: IExternalIdentity = {
-      type: 'c8y_Serial',
-      externalId: externalDeviceId
-    }
-    return this.identityService.detail(identity).then(result => {
-      return this.inventoryService.detail(result.data.managedObject.id)
-    })
-
+  getDetailsCloudDevice(externalId: string): Promise<any | Object> {
+    const options: IFetchOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    let externalIdType = 'c8y_Serial';
+    let url_id = `/identity/externalIds/${externalIdType}/${externalId}` + "?proxy=" + this.edgeConfiguration['c8y.url']
+    let inventoryPromise: Promise<IFetchResponse> = this.fetchClient.fetch(url_id, options)
+      .then(response => {
+        console.log("Inventory response:", response);
+        return response;
+      })
+      .then(response => response.json())
+      .then(json => {
+        console.log("Device id response:", json.managedObject.id);
+        let deviceId = json.managedObject.id
+        let url_inv = INVENTORY_URL + `/${deviceId}`
+        return this.fetchClient.fetch(this.addProxy2Url(url_inv), options)
+          .then(response => {
+            console.log("Inventory response:", response);
+            return response;
+          });
+      })
+      .then(response => response.json())
+      .catch(err => {
+        console.log("Could not login:" + err.message)
+        return err;
+      })
+    return inventoryPromise;
   }
 
-
-  initFetchClient(): Promise<any | Object> {
+  initFetchClient() {
     const auth = new BasicAuth({
       user: this.edgeConfiguration.username,
       password: this.edgeConfiguration.password,
     });
+
     const client = new Client(auth, C8Y_URL);
-    client.setAuth(auth);
     this.fetchClient = client.core;
-    this.inventoryService = new InventoryService(this.fetchClient);
-    this.identityService = new IdentityService(this.fetchClient);
-
-    const params = {
-      proxy: 'https://' + this.edgeConfiguration['c8y.url']
-    }
-
-    let promise = this.http.post(PROXY_CONFIG_URL, params)
-      .toPromise()
-      .then(response => {
-        //console.log ("Resulting cmd:", response);
-        return response;
-      })
-      .catch(err => console.log("Could not set backend proxy"))
-    return promise
   }
 
   login(): Promise<IFetchResponse> {
     const options: IFetchOptions = {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json'
+      }
     };
 
-    let loginPromise: Promise<IFetchResponse> = this.fetchClient.fetch(LOGIN_URL, options)
+    let loginPromise: Promise<IFetchResponse> = this.fetchClient.fetch(this.addProxy2Url(LOGIN_URL), options)
       .then(response => {
         //console.log ("Resulting cmd:", response);
         return response;
@@ -249,11 +245,15 @@ export class EdgeService {
     return loginPromise;
   }
 
-  async uploadCertificate(): Promise <Object| any>{
+  addProxy2Url(url: string): string {
+    return url + "?proxy=" + this.edgeConfiguration['c8y.url']
+  }
+
+  async uploadCertificate(): Promise<Object | any> {
     let res = await this.login();
     let body = await res.json();
     let currentTenant = body.name;
-    let certificate_url = `/tenant/tenants/${currentTenant}/trusted-certificates`
+    let certificate_url = this.addProxy2Url(`/tenant/tenants/${currentTenant}/trusted-certificates`);
     console.log("Response body from login:", body)
 
     let cert = await this.downloadCertificate("text");
@@ -261,9 +261,9 @@ export class EdgeService {
     const options: IFetchOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({certInPemFormat: cert, "autoRegistrationEnabled": true, status: "ENABLED", name:this.edgeConfiguration["device.id"]})
+      body: JSON.stringify({ certInPemFormat: cert, "autoRegistrationEnabled": true, status: "ENABLED", name: this.edgeConfiguration["device.id"] })
     };
-    
+
     //console.log("Upload certificate:", certificate_url, cert)
 
     let uploadPromise: Promise<IFetchResponse> = this.fetchClient.fetch(certificate_url, options)
@@ -275,7 +275,7 @@ export class EdgeService {
         console.log("Could not upload certificate:" + err.message)
         return err;
       })
-    return uploadPromise; 
+    return uploadPromise;
   }
 
   // Error handling
