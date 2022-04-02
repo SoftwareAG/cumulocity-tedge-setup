@@ -1,31 +1,40 @@
 # Cumulocity Thin Edge Setup
 
+
 This project adds a ueb-ui to the thin edge. This helps to setup and monitor the edge using a web-ui:
 * web-ui, for easy setup of the thin edge 
 * simple line chart to view streamed data and to view historical data
 * component to store measurements locally in a mongo db
 
-## Solution components
+# Content
+1. [Solution components](#solution-components)
+2. [Build thin edge binaries and run solution](#build-thin-edge-binaries-and-run-solution)
+3. [Configure thin edge in the web-ui](#configure-thin-edge-in-the-web-ui)
+
+# Solution components
+
 This solution consists of 3 components
 * tedge component: contain the thin edge core services: tedge_agent, tedge_mapper, ... and web-ui app
 * mqtt_colletctor: listens to measurements on all topics of the mosquitto broker and sends them to the mongo db
 * mongodb: stores the measurements in a colletion, to be retrieved by the web-ui. All measurements have time-to-live (TTL) of 300. This can be changed
 
+![Components of Docker Container tedge-ui](/resource/01-Architecture.svg)
+![Docker Container](/resource/02-Architecture.svg)
 
-## Build thin edge binaries
+# Build thin edge binaries and run solution
 
+To build the thin edge binaries run:
 ```
 cd tedge
 docker build --file Dockerfile-build --output bin .
 ```
-
-## Run solution
-
+To build the docker solution run:
 ```
 docker-compose up
 ```
 
-## Setup in web-ui
+# Configure thin edge in the web-ui
+
 To access the web-ui open a web bowser at: http://localhost:9080/#/setup.\
 Here you start the setup of the edge and enter external device id and your cumulocity tenant url.\
 ![Setup](/resource/01-Setup.png)
