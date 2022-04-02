@@ -31,7 +31,7 @@ class ThinEdgeBackend {
         if (ThinEdgeBackend.measurementCollection == null || ThinEdgeBackend.seriesCollection == null) {
             console.error(`Connect to mongo first: ${socket.id}`)
         } else {
-            this.watchMeasurementColletion();
+            this.watchMeasurementCollection();
         }
     }
 
@@ -74,7 +74,7 @@ class ThinEdgeBackend {
         }
     }
 
-    watchMeasurementColletion() {
+    watchMeasurementCollection() {
         let changeStream = undefined;
         let localSocket = this.socket;
         // watch measurement collection for changes

@@ -41,7 +41,7 @@ export class ControlComponent implements OnInit {
         this.showStatusBar = false
       } else if (st.status == 'end-job') {
         this.message = "success"
-        this.alertService.success(`Successfully completted command ${this.command}`)
+        this.alertService.success(`Successfully completed command ${this.command}`)
         this.commandTerminal = this.commandTerminal + "\r\n" + "# "
         this.showStatusBar = false
       } else if (st.cmd) {
