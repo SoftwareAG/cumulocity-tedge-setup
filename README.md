@@ -13,13 +13,17 @@ This project adds a ueb-ui to the thin edge. This helps to setup and monitor the
 
 # Solution components
 
-This solution consists of 3 components
-* tedge component: contain the thin edge core services: tedge_agent, tedge_mapper, ... and web-ui app
-* mqtt_colletctor: listens to measurements on all topics of the mosquitto broker and sends them to the mongo db
-* mongodb: stores the measurements in a colletion, to be retrieved by the web-ui. All measurements have time-to-live (TTL) of 300. This can be changed
+This solution consists of 3 services:
+* `tedge`: contain the thin edge core services: `tedge_agent`, `tedge_mapper`, ... and `tedge-ui` app
+* `mqtt_colletctor`: listens to measurements on all topics of the mosquitto broker and sends them to the mongo db
+* `mongodb`: stores the measurements in a colletion, to be retrieved by the web-ui. All measurements have time-to-live (TTL) of 300. This can be changed
+
+![Docker Container](/resource/02-Architecture.svg)
+
+The folowing diagram show how the components (`tedge-ui`, `node` backend, `tedge` processes) in the tedge service communicate:
 
 ![Components of Docker Container tedge-ui](/resource/01-Architecture.svg)
-![Docker Container](/resource/02-Architecture.svg)
+
 
 # Build thin edge binaries and run solution
 
