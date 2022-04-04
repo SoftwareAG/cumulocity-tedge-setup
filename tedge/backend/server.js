@@ -144,9 +144,10 @@ io.on('connection', function (socket) {
     console.log(`New connection from web ui: ${socket.id}`);
     backend = new thinEdgeBackend.ThinEdgeBackend(socket)
     socket.on('cmd-in', function (message) {
-        /*         msg = JSON.parse(message)
-                console.log(`New cmd: ${message}`, message.cmd, msg.cmd);
-                message = msg */
+        
+/*         msg = JSON.parse(message)
+        message = msg */
+
         console.log(`New cmd: ${message}`, message.cmd);
         if (message.cmd == 'start') {
             backend.start();
@@ -156,7 +157,9 @@ io.on('connection', function (socket) {
             backend.configure(message);
         } else if (message.cmd == 'reset') {
             backend.reset();
-        } {
+        } else if (message.cmd == 'upload') {
+            backend.uploadCertificate();
+        } else {
             socket.emit('cmd-progress', {
                 status: 'ignore',
                 progress: 0,

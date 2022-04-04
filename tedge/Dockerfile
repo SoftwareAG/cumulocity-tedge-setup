@@ -1,24 +1,32 @@
+
+FROM rust:alpine as builder
+
+ARG VERSION=0.6.1
+
+RUN apk add --no-cache musl-dev make git
+WORKDIR /app
+RUN git clone -b $VERSION https://github.com/thin-edge/thin-edge.io.git
+WORKDIR /app/thin-edge.io
+RUN cargo build --release
+
+
 FROM node:16-alpine3.15
 #FROM alpine:latest
+
 
 #Otherwise mosquitto fails
 VOLUME ["/sys/fs/cgroup"]
 
 #We need curl to get root certificates
-RUN apk update
-RUN apk upgrade
-RUN apk add mosquitto
-RUN apk add curl
-RUN apk add collectd
-RUN apk add sudo
-RUN apk add openrc
-RUN apk add bash
-RUN apk add collectd-mqtt
-RUN apk add mosquitto-libs
+# We need curl to get root certificates
+RUN apk update \
+    && apk upgrade \
+    && apk --no-cache add mosquitto curl collectd sudo openrc collectd-mqtt mosquitto-libs
 
-#ENVS
-ENV VERSION=0.6.1
-ENV ARCH=amd64
+#Create /run/lock
+RUN mkdir /run/lock
+RUN chmod 1777 /run/lock/
+
 
 #Add user and groups
 RUN addgroup tedge-users
@@ -27,21 +35,32 @@ RUN addgroup -S tedge-agent
 RUN addgroup -S tedge-mapper
 RUN addgroup -S tedge-ui
 RUN adduser -g "" -H -D tedge -G tedge
-RUN adduser -g "" -H -D tedge-agent -G tedge-agent
 RUN adduser -g "" -H -D tedge-mapper -G tedge-mapper
+RUN adduser -g "" -H -D tedge-agent -G tedge-agent
 RUN adduser -g "" -H -D tedge-ui -G tedge-ui
+RUN adduser tedge-mapper tedge
+RUN adduser tedge-agent tedge
 
 #Add tedge-agent to sudoers
 RUN echo "%tedge-agent   ALL = (ALL) NOPASSWD: /etc/tedge/sm-plugins/[a-zA-Z0-9]*, /bin/sync, /sbin/init" >/etc/sudoers.d/tedge-agent
 #Add tedge-ui to sudoers
 RUN echo "%tedge-ui   ALL = (ALL) NOPASSWD: ALL" >/etc/sudoers.d/tedge-ui
 
-#Create /run/lock
-RUN mkdir /run/lock
-RUN chmod 1777 /run/lock/
+# Move built executables from build stage
+COPY --from=builder /app/thin-edge.io/target/release/tedge /bin/tedge
+COPY --from=builder /app/thin-edge.io/target/release/tedge_mapper /bin/tedge_mapper
+COPY --from=builder /app/thin-edge.io/target/release/tedge_agent /bin/tedge_agent
+COPY --from=builder /app/thin-edge.io/target/release/tedge_logfile_request_plugin /bin/tedge_logfile_request_plugin
+RUN chown root:root /bin/tedge
+RUN chown root:root /bin/tedge_agent
+RUN chown root:root /bin/tedge_mapper
+RUN chown root:root /bin/tedge_logfile_request_plugin
 
 COPY ./ /app
 WORKDIR /app
+
+#Copy mosquitto.conf
+COPY ./etc/mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
 
 #Copy binaries to /bin
 RUN cp -r  ./bin/* /bin
@@ -50,8 +69,6 @@ RUN chown root:root /bin/tedge_agent
 RUN chown root:root /bin/tedge_mapper
 RUN chown root:root /bin/tedge_logfile_request_plugin
 
-#Copy mosquitto.conf
-COPY ./etc/mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
 
 #Set init system to openRC:
 COPY ./etc/init.d/mosquitto /etc/init.d/mosquitto
@@ -64,10 +81,17 @@ COPY ./etc/init.d/tedge-agent /etc/init.d/tedge-agent
 RUN chmod +x /etc/init.d/tedge-agent
 COPY ./etc/init.d/tedge-mapper-collectd /etc/init.d/tedge-mapper-collectd
 RUN chmod +x /etc/init.d/tedge-mapper-collectd
+
+#Add configuration for tedge-ui
 COPY ./etc/init.d/tedge-ui /etc/init.d/tedge-ui
 RUN chmod +x /etc/init.d/tedge-ui
 # Start tedge-ui
 RUN rc-update add tedge-ui default
+
+# Copy system.toml
+COPY ./etc/tedge/system.toml /etc/tedge/system.toml
+RUN chmod 444 /etc/tedge/system.toml
+
 
 #Create required tedge directories and files
 RUN install -g tedge -o tedge -m 755 -d /var/log/tedge
@@ -81,14 +105,13 @@ RUN install -g tedge -o tedge -m 755 -d /etc/tedge/operations/c8y
 RUN install -g tedge -o tedge -m 755 -d /etc/tedge/operations/az
 RUN install -g tedge -o tedge -m 755 -d /etc/tedge/plugins
 RUN install -g tedge-agent -o tedge-agent -m 754 -d /etc/tedge/.agent
+#Create sm-plugins directory
 RUN install -g root -o root -m 755 -d /etc/tedge/sm-plugins
-COPY ./etc/tedge/system.toml /etc/tedge/system.toml
-RUN chmod 444 /etc/tedge/system.toml
 
 #Copy operation files
-RUN cp -r ./etc/tedge/operations/c8y/* /etc/tedge/operations/c8y
-RUN chown root:root /etc/tedge/operations/c8y/*
-RUN chmod 644 /etc/tedge/operations/c8y/*
+COPY ./etc/tedge/operations/c8y/* /etc/tedge/operations/c8y
+RUN chown -R root:root /etc/tedge/operations/c8y
+RUN chmod -R 644 /etc/tedge/operations/c8y
 
 #Copy sm dummy plugin
 COPY ./etc/tedge/sm-plugins/tedge_dummy_plugin /etc/tedge/sm-plugins/tedge_dummy_plugin

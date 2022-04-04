@@ -58,7 +58,8 @@ MQTT_Collector/__pycache__/mqtt.cpython-39.pyc
 attic/Dockerfile
 attic/tenants.json
 attic/tenants.csv
+attic/test.html
 tedge/package-lock.json
-*SONNTAG
 tedge/tedge-ui-env
 tedge/bin
+test.html
